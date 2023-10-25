@@ -79,8 +79,6 @@ double FFAutotuner::getVoltage(Pose1D currPose){
 void FFAutotuner::resetProfile(Pose1D currPose){
     double duration = profile_.getDuration();
     if(duration != 0.0){
-        double avgAbsError = error_.absTotalError.vel/duration;
-
         double dKv = error_.gainError.ks/duration * s_;
         double dKa = error_.gainError.ka/duration * s_;
         double dKs = error_.gainError.ks/duration * s_;
@@ -95,7 +93,6 @@ void FFAutotuner::resetProfile(Pose1D currPose){
 
     double maxDist = bounds_.max - bounds_.min;
 
-    double maxVel, maxAcc;
     if(duration != 0.0){
         if((error_.absTotalError.pos/duration < 0.1) && (error_.absTotalError.vel/duration < 0.1)){
             expectTime /= 1.5;
