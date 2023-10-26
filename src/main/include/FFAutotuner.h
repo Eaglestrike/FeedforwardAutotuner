@@ -3,6 +3,8 @@
 #include "TrapezoidalProfile.h"
 #include "Poses.h"
 
+#include "ShuffleboardSender/ShuffleboardSender.h"
+
 /**
  * Auto tuner class
  * 
@@ -23,20 +25,21 @@ class FFAutotuner{
             double kg = 0.0;
         };
 
-        FFAutotuner(FFType type, double min = 0.0, double max = 0.0);
+        FFAutotuner(std::string name, FFType type, double min = 0.0, double max = 0.0);
         double getVoltage(Poses::Pose1D currPose);
 
+        void zeroBounds(double val = 0.0);
+        void expandBounds(double val);
         void setMin(double min);
         void setMax(double max);
-        void setBounds(bool bounds);
 
     private:
         void resetProfile(Poses::Pose1D currPose);
         void resetError();
 
-        double lastTime;
-
+        std::string name_;
         FFType ffType_;
+        double lastTime_;
 
         TrapezoidalProfile profile_;
         double expectTime = 10.0;
@@ -54,4 +57,6 @@ class FFAutotuner{
             Poses::Pose1D totalError;
             Poses::Pose1D absTotalError;
         } error_;
+
+        ShuffleboardSender ShuffData_;
 };

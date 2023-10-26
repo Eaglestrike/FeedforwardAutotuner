@@ -20,9 +20,8 @@ SwerveModule::SwerveModule(SwerveConstants::SwerveStruct swerveMod):
 
 void SwerveModule::Periodic(){
     //Calc velocity
-    //double wheelAng = turnMotor_->GetSelectedSensorPosition() / SwerveConstants::TICKS_PER_RADIAN;
     double wheelAng = toRad((encoderInverted_?-1.0:1.0)*cancoder_.GetAbsolutePosition() + encoderOffset_);
-    double driveAngVel = driveMotor_.GetSelectedSensorVelocity() * 10.0 / SwerveConstants::TICKS_PER_RADIAN;
+    double driveAngVel = driveMotor_.GetSelectedSensorVelocity() * 10.0 / SwerveConstants::TICKS_PER_RADIAN  * SwerveConstants::WHEEL_RADIUS;
     double wheelVel = driveAngVel * SwerveConstants::WHEEL_RADIUS;
     currPose_.ang = wheelAng;
     currPose_.speed = wheelVel;

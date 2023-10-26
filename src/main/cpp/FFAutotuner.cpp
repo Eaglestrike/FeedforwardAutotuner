@@ -7,18 +7,20 @@
 using namespace Poses;
 using namespace MathUtil;
 
-FFAutotuner::FFAutotuner(FFType type, double min, double max):
-    lastTime(frc::Timer::GetFPGATimestamp().value()),
+FFAutotuner::FFAutotuner(std::string name, FFType type, double min, double max):
+    name_(name),
     ffType_(type),
+    lastTime_(frc::Timer::GetFPGATimestamp().value()),
     profile_(0.0, 0.0),
     bounds_({.min = min, .max = max}),
-    ffTesting_({.kv = 0.0, .ka = 0.0, .ks = 0.0, .kg = 0.0})
+    ffTesting_({.kv = 0.0, .ka = 0.0, .ks = 0.0, .kg = 0.0}),
+    ShuffData_(name)
 {
     resetError();
 }
 
 double FFAutotuner::getVoltage(Pose1D currPose){
-    double dt = frc::Timer::GetFPGATimestamp().value() - lastTime;
+    double dt = frc::Timer::GetFPGATimestamp().value() - lastTime_;
     if(profile_.isFinished()){
         resetProfile(currPose);
     }
@@ -63,7 +65,7 @@ double FFAutotuner::getVoltage(Pose1D currPose){
     error_.totalError += error;
     error_.absTotalError += abs(error);
 
-    lastTime = frc::Timer::GetFPGATimestamp().value();
+    lastTime_ = frc::Timer::GetFPGATimestamp().value();
     switch(ffType_){
         case SIMPLE:
             return stcComp*ffTesting_.ks + expectedPose.vel*ffTesting_.kv + expectedPose.acc*ffTesting_.ka;
@@ -108,6 +110,21 @@ void FFAutotuner::resetProfile(Pose1D currPose){
     double nextTarget = unif(re);
     profile_.setTarget(currPose, {.pos = nextTarget, .vel = 0.0, .acc = 0.0});
 }
+
+void FFAutotuner::zeroBounds(double val){
+    bounds_.min = val;
+    bounds_.max = val;
+}
+
+void FFAutotuner::expandBounds(double val){
+    if(val > bounds_.max){
+        bounds_.max = val;
+    }
+    if(val < bounds_.min){
+        bounds_.min = val;
+    }
+}
+
 
 void FFAutotuner::setMin(double min){
     bounds_.min = min;

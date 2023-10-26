@@ -59,6 +59,8 @@ void SwerveDrive::updatePose(){
     currentPose_.pos += velocity * dt;
     currentPose_.accel = (velocity - currentPose_.vel) / dt;
     currentPose_.vel = velocity;
+
+    lastUpdate_ = frc::Timer::GetFPGATimestamp().value();
 }
 
 void SwerveDrive::TeleopInit(){
@@ -79,6 +81,19 @@ void SwerveDrive::TeleopPeriodic(){
  * i.e. tell what the modules to do
 */
 void SwerveDrive::drive(){
+    if(targetPose_.angVel == 0.0){
+        if(!isHoldingAng_){
+            isHoldingAng_ = true;
+            holdingAng_ = currentPose_.ang;
+        }
+        double angleError = GeometryHelper::getAngDiff(holdingAng_, currentPose_.ang);
+        if(abs(angleError) < 0.3){
+            targetPose_.angVel += 2.5 * angleError;
+        }
+    }
+    else{
+        holdingAng_ = false;
+    }
     for(SwerveModule* module : modules_){
         Vector angVelVec = module->getPos() - pivot_; //Get vector from pivot to module
         angVelVec.rotateCounterclockwise90This(); //Set to vector tangent to the path of rotation

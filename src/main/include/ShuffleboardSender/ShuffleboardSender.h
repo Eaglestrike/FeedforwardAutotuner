@@ -36,16 +36,16 @@ class ShuffleboardSender{
             items_.push_back(new ShuffleboardItem({name, tab_, edit}, o));
         }
 
+        /**
+         * Pose Struct:
+         * {width, height, x, y}
+        */
         struct ShuffleboardPose{
             int width = 1;
             int height = 1;
             int positionX = -1;
             int positionY = -1;
         };
-        /**
-         * Pose Struct:
-         * {width, height, x, y}
-        */
         template <typename T> void add(std::string name, T* o, ShuffleboardPose pose, bool edit = false){
             items_.push_back(new ShuffleboardItem({name, tab_, edit, pose.width, pose.height, pose.positionX, pose.positionY}, o));
         }
@@ -63,9 +63,11 @@ class ShuffleboardSender{
 
     private:
         std::string name_;
+
         bool initialized_ = false;
         bool edit_ = false;
         bool enabled_ = false;
+        
         frc::ShuffleboardTab* tab_;
         std::vector<ShuffleboardItemInterface*> items_;
 };

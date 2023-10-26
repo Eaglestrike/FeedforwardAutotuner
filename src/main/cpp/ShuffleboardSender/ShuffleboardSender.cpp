@@ -1,7 +1,10 @@
 #include "ShuffleboardSender/ShuffleboardSender.h"
 
 ShuffleboardSender::ShuffleboardSender(std::string name):
-name_(name)
+    name_(name),
+    initialized_(false),
+    edit_(false),
+    enabled_(false)
 {
 }
 

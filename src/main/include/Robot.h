@@ -13,7 +13,7 @@
 
 #include "RobotConstants.h"
 #include "SwerveDrive/SwerveDrive.h"
-
+#include "FFAutotuner.h"
 #include "Controller/Controller.h"
 
 class Robot : public frc::TimedRobot {
@@ -32,7 +32,10 @@ class Robot : public frc::TimedRobot {
         void SimulationPeriodic() override;
 
     private:
-        SwerveDrive drive_{""};
+        SwerveDrive drive_{"Drivebase"};
+        FFAutotuner tunerX{"Swerve X", FFAutotuner::SIMPLE};
+        FFAutotuner tunerY{"Swerve Y", FFAutotuner::SIMPLE};
+
         AHRS* navx_;
         Controller controls_;
 };

@@ -43,6 +43,9 @@ class SwerveDrive{
 
         Point pivot_{0.0, 0.0};
 
+        bool isHoldingAng_;
+        double holdingAng_;
+
         SwervePose::Pose targetPose_;
         SwervePose::Pose currentPose_;
         bool volts_ = true;
