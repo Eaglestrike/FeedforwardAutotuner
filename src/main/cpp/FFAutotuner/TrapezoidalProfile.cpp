@@ -1,6 +1,6 @@
-#include "TrapezoidalProfile.h"
+#include "FFAutotuner\TrapezoidalProfile.h"
 
-#include "MathUtil.h"
+#include "Util\MathUtil.h"
 using namespace MathUtil;
 
 TrapezoidalProfile::TrapezoidalProfile(double maxVel, double maxAcc):

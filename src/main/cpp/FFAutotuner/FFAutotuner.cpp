@@ -1,8 +1,8 @@
-#include "FFAutotuner.h"
+#include "FFAutotuner\FFAutotuner.h"
 
 #include <random>
 
-#include "MathUtil.h"
+#include "Util\MathUtil.h"
 
 using namespace Poses;
 using namespace MathUtil;
@@ -10,6 +10,8 @@ using namespace MathUtil;
 FFAutotuner::FFAutotuner(std::string name, FFType type, double min, double max):
     name_(name),
     ffType_(type),
+    state_(TUNING),
+    currPose_({.pos = 0.0, .vel = 0.0, .acc = 0.0}),
     lastTime_(frc::Timer::GetFPGATimestamp().value()),
     profile_(0.0, 0.0),
     bounds_({.min = min, .max = max}),
@@ -17,16 +19,32 @@ FFAutotuner::FFAutotuner(std::string name, FFType type, double min, double max):
     ShuffData_(name)
 {
     resetError();
+    ShuffData_.Initialize(true);
+    ShuffData_.add("s", &s_);
+    ShuffData_.add("", &s_);
 }
 
 double FFAutotuner::getVoltage(Pose1D currPose){
+    currPose_ = currPose;
     double dt = frc::Timer::GetFPGATimestamp().value() - lastTime_;
+
+    if(currPose_.pos > bounds_.max && state_ != RECENTER_FROM_MAX){ // Out of bounds
+        state_ = RECENTER_FROM_MAX;
+        resetProfile(true);
+    }
+
+    if(currPose_.pos < bounds_.min && state_ != RECENTER_FROM_MIN){ // Out of bounds
+        state_ = RECENTER_FROM_MIN;
+        resetProfile(true);
+    }
+
     if(profile_.isFinished()){
-        resetProfile(currPose);
+        state_ = TUNING;
+        resetProfile(false);
     }
 
     Pose1D expectedPose = profile_.currentPose();
-    Pose1D error = (expectedPose - currPose)*dt;
+    Pose1D error = (expectedPose - currPose_)*dt;
 
     double maxVel = profile_.getMaxVel();
     double maxAcc = profile_.getMaxAcc();
@@ -78,7 +96,7 @@ double FFAutotuner::getVoltage(Pose1D currPose){
     }
 }
 
-void FFAutotuner::resetProfile(Pose1D currPose){
+void FFAutotuner::resetProfile(bool center){
     double duration = profile_.getDuration();
     if(duration != 0.0){
         double dKv = error_.gainError.ks/duration * s_;
@@ -105,10 +123,16 @@ void FFAutotuner::resetProfile(Pose1D currPose){
     profile_.setMaxVel(maxVel);
     profile_.setMaxAcc(maxAcc);
 
-    std::uniform_real_distribution<double> unif(bounds_.min, bounds_.max);
-    std::default_random_engine re;
-    double nextTarget = unif(re);
-    profile_.setTarget(currPose, {.pos = nextTarget, .vel = 0.0, .acc = 0.0});
+    double nextTarget;
+    if(center){
+        nextTarget = (bounds_.min + bounds_.max)/2.0;
+    }
+    else{
+        std::uniform_real_distribution<double> unif(bounds_.min, bounds_.max);
+        std::default_random_engine re;
+        nextTarget = unif(re);
+    }
+    profile_.setTarget(currPose_, {.pos = nextTarget, .vel = 0.0, .acc = 0.0});
 }
 
 void FFAutotuner::zeroBounds(double val){
@@ -124,7 +148,6 @@ void FFAutotuner::expandBounds(double val){
         bounds_.min = val;
     }
 }
-
 
 void FFAutotuner::setMin(double min){
     bounds_.min = min;

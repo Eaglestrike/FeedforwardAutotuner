@@ -1,6 +1,6 @@
-#include "SwerveDrive/SwerveDrive.h"
+#include "SwerveDrive\SwerveDrive.h"
 
-#include "Geometry/GeometryHelper.h"
+#include "Util\GeometryHelper.h"
 using namespace GeometryHelper;
 
 SwerveDrive::SwerveDrive(std::string name):

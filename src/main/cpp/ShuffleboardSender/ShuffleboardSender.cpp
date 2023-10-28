@@ -1,4 +1,4 @@
-#include "ShuffleboardSender/ShuffleboardSender.h"
+#include "ShuffleboardSender\ShuffleboardSender.h"
 
 ShuffleboardSender::ShuffleboardSender(std::string name):
     name_(name),

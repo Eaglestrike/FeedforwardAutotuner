@@ -1,19 +1,19 @@
 #pragma once
 
-#include <ctre/Phoenix.h>
+#include <ctre\Phoenix.h>
 
-#include <frc2/command/PIDCommand.h>
-#include <frc/shuffleboard/Shuffleboard.h>
-#include <units/voltage.h>
+#include <frc2\command\PIDCommand.h>
+#include <frc\shuffleboard\Shuffleboard.h>
+#include <units\voltage.h>
 
 #include <string>
 #include <cmath>
 #include <iostream>
 
-#include "Geometry/Point.h"
+#include "Util\Point.h"
 #include "SwervePose.h"
 #include "SwerveConstants.h"
-#include "ShuffleboardSender/ShuffleboardSender.h"
+#include "ShuffleboardSender\ShuffleboardSender.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846	/* pi */

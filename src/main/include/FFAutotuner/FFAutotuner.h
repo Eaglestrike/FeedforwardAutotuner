@@ -1,9 +1,9 @@
 #pragma once
 
 #include "TrapezoidalProfile.h"
-#include "Poses.h"
+#include "Util\Poses.h"
 
-#include "ShuffleboardSender/ShuffleboardSender.h"
+#include "ShuffleboardSender\ShuffleboardSender.h"
 
 /**
  * Auto tuner class
@@ -25,6 +25,18 @@ class FFAutotuner{
             double kg = 0.0;
         };
 
+        enum State{
+            TUNING,
+            HOLDING_POS,
+            RECENTER_FROM_MIN,
+            RECENTER_FROM_MAX
+        };
+
+        struct Bounds{
+            double min;
+            double max;
+        };
+
         FFAutotuner(std::string name, FFType type, double min = 0.0, double max = 0.0);
         double getVoltage(Poses::Pose1D currPose);
 
@@ -34,20 +46,19 @@ class FFAutotuner{
         void setMax(double max);
 
     private:
-        void resetProfile(Poses::Pose1D currPose);
+        void resetProfile(bool center);
         void resetError();
 
         std::string name_;
         FFType ffType_;
+        State state_;
+        Poses::Pose1D currPose_;
         double lastTime_;
 
         TrapezoidalProfile profile_;
         double expectTime = 10.0;
 
-        struct Bounds{
-            double min;
-            double max;
-        } bounds_;
+        Bounds bounds_;
 
         FFConfig ffTesting_;
         double s_ = 0.1;

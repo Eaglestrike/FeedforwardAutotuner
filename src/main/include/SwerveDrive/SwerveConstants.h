@@ -3,9 +3,9 @@
 #include <string>
 #include <cmath>
 
-#include <frc2/command/PIDCommand.h>
+#include <frc2\command\PIDCommand.h>
 
-#include "Geometry/Point.h"
+#include "Util\Point.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846	/* pi */

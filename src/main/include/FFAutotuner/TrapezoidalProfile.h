@@ -2,7 +2,7 @@
 
 #include <frc\timer.h>
 
-#include "Poses.h"
+#include "Util\Poses.h"
 
 class TrapezoidalProfile{
     public:

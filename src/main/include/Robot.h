@@ -12,9 +12,9 @@
 #include <AHRS.h>
 
 #include "RobotConstants.h"
-#include "SwerveDrive/SwerveDrive.h"
-#include "FFAutotuner.h"
-#include "Controller/Controller.h"
+#include "SwerveDrive\SwerveDrive.h"
+#include "FFAutotuner\FFAutotuner.h"
+#include "Controller\Controller.h"
 
 class Robot : public frc::TimedRobot {
     public:
