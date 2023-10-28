@@ -45,25 +45,25 @@ class SwerveModule{
         const std::string name_;
 
         WPI_TalonFX driveMotor_;
-        units::volt_t driveVolts_{0.0};
+        units::volt_t driveVolts_;
         double maxDriveVolts_ = SwerveConstants::DRIVE_MAX_VOLTS;//volts
         
         WPI_TalonFX turnMotor_;
-        units::volt_t turnVolts_{0.0};
+        units::volt_t turnVolts_;
         double maxTurnVolts_ = SwerveConstants::TURN_MAX_VOLTS;
 
         WPI_CANCoder cancoder_;
         double encoderOffset_;
         bool encoderInverted_;
 
-        frc::PIDController turnPID_{0, 0, 0};
+        frc::PIDController turnPID_;
         SwervePose::ModulePose targetPose_;//either m/s or volts for drive
         bool volts_; //using volts or nah
 
         SwervePose::ModulePose currPose_; //normal units (m, rad)
         Vector vel_;
 
-        Point pos_ = {0, 0}; //Position on robot, accessed by swerveDrive, stored in module
+        Point pos_; //Position on robot, accessed by swerveDrive, stored in module
 
         bool inverted_ = false;
 

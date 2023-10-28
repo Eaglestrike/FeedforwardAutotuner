@@ -5,13 +5,12 @@ using namespace GeometryHelper;
 
 SwerveModule::SwerveModule(SwerveConstants::SwerveStruct swerveMod):
     name_(swerveMod.name),
-    driveMotor_(swerveMod.driveID, SwerveConstants::canBus),
-    turnMotor_(swerveMod.turnID, SwerveConstants::canBus),
+    driveMotor_(swerveMod.driveID, SwerveConstants::canBus), driveVolts_(0.0),
+    turnMotor_(swerveMod.turnID, SwerveConstants::canBus), turnVolts_(0.0),
     cancoder_(swerveMod.encoderID, SwerveConstants::canBus),
-    pos_(swerveMod.pos),
+    encoderOffset_(swerveMod.encoderOffset), encoderInverted_(swerveMod.encoderInverted),
     turnPID_(swerveMod.turnPID),
-    encoderOffset_(swerveMod.encoderOffset),
-    encoderInverted_(swerveMod.encoderInverted),
+    pos_(swerveMod.pos),
     ShuffData_(swerveMod.name)
 {
     driveMotor_.SetNeutralMode(NeutralMode::Coast);

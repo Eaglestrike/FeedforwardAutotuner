@@ -1,8 +1,6 @@
-#pragma once
-
 #include "ShuffleboardSender/ShuffleboardItem.h"
 #include "SwerveDrive/SwervePose.h"
-#include "Geometry/GeometryHelper.h"
+#include "Util/GeometryHelper.h"
 
 using namespace GeometryHelper;
 
