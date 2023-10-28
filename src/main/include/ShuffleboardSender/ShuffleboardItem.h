@@ -12,7 +12,6 @@
 #include <frc2/command/PIDCommand.h>
 #include <units/voltage.h>
 #include "SwerveDrive/SwervePose.h"
-#include "Util/Point.h"
 
 class ShuffleboardItemInterface{
     public:
@@ -137,28 +136,6 @@ template<> class ShuffleboardItem<frc::PIDController>: public ShuffleboardItemIn
         bool edit_;
         frc::PIDController* value_;
         nt::GenericEntry* entry_[3]; //[P, I, D]
-};
-
-template<> class ShuffleboardItem<Point>: public ShuffleboardItemInterface{
-    public:
-        ShuffleboardItem(ItemData data, Point* value);
-        void send() override;
-        void edit() override;
-    private:
-        bool edit_;
-        Point* value_;
-        nt::GenericEntry* entry_[2]; //[x, y]
-};
-
-template<> class ShuffleboardItem<SwervePose::ModulePose>: public ShuffleboardItemInterface{
-    public:
-        ShuffleboardItem(ItemData data, SwervePose::ModulePose* value);
-        void send() override;
-        void edit() override;
-    private:
-        bool edit_;
-        SwervePose::ModulePose* value_;
-        nt::GenericEntry* entry_[2]; //[Ang, Speed]
 };
 
 template<> class ShuffleboardItem<SwervePose::Pose>: public ShuffleboardItemInterface{

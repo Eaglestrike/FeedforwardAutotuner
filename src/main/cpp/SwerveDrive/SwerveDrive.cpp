@@ -1,6 +1,7 @@
 #include "SwerveDrive\SwerveDrive.h"
 
 #include "Util\GeometryHelper.h"
+#include "Util\ShuffleboardItems\SI_Point.h"
 using namespace GeometryHelper;
 
 SwerveDrive::SwerveDrive(std::string name):

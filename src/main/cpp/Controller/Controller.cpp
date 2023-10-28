@@ -350,6 +350,7 @@ bool Controller::getPressed(Action action){
             break;
         case AXIS_BUTTON:
             std::cout<<"Not applicable for getPressed:";
+            [[fallthrough]];
         default:
             std::cout<<"Action"<< action << " bad mapping" << std::endl;
             return false;
@@ -378,6 +379,7 @@ bool Controller::getPressedOnce(Action action){
             break;
         case AXIS_BUTTON:
             std::cout<<"Not applicable for getPressedOnce:";
+            [[fallthrough]];
         default:
             std::cout<<"Action"<< action << " bad mapping" << std::endl;
             return false;

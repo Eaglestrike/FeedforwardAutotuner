@@ -95,48 +95,6 @@ ShuffleboardItem<frc::PIDController>::ShuffleboardItem(ItemData data, frc::PIDCo
     entry_[2] = pidLayout->Add("D", value->GetD()).GetEntry(); 
 };
 
-ShuffleboardItem<Point>::ShuffleboardItem(ItemData data, Point* value):
-    edit_(data.edit)
-{
-    value_ = value;
-
-    frc::ShuffleboardLayout* poseLayout;
-    if((data.positionX >= 0) && (data.positionY >= 0)){
-        poseLayout = &data.tab->GetLayout(data.name, frc::BuiltInLayouts::kList)
-                                                    .WithSize(data.width, data.height)
-                                                    .WithPosition(data.positionX, data.positionY)
-                                                    .WithProperties({std::make_pair("Label Position", nt::Value::MakeString("Right"))});
-    }
-    else{
-        poseLayout = &data.tab->GetLayout(data.name, frc::BuiltInLayouts::kList)
-                                                    .WithSize(data.width, data.height)
-                                                    .WithProperties({std::make_pair("Label Position", nt::Value::MakeString("Right"))});
-    }
-    entry_[0] = poseLayout->Add("X", value->getX()).GetEntry();   
-    entry_[1] = poseLayout->Add("Y", value->getY()).GetEntry(); 
-};
-
-ShuffleboardItem<SwervePose::ModulePose>::ShuffleboardItem(ItemData data, SwervePose::ModulePose* value):
-    edit_(data.edit)
-{
-    value_ = value;
-
-    frc::ShuffleboardLayout* poseLayout;
-    if((data.positionX >= 0) && (data.positionY >= 0)){
-        poseLayout = &data.tab->GetLayout(data.name, frc::BuiltInLayouts::kList)
-                                                    .WithSize(data.width, data.height)
-                                                    .WithPosition(data.positionX, data.positionY)
-                                                    .WithProperties({std::make_pair("Label Position", nt::Value::MakeString("Right"))});
-    }
-    else{
-        poseLayout = &data.tab->GetLayout(data.name, frc::BuiltInLayouts::kList)
-                                                    .WithSize(data.width, data.height)
-                                                    .WithProperties({std::make_pair("Label Position", nt::Value::MakeString("Right"))});
-    }
-    entry_[0] = poseLayout->Add("Ang", toDeg(value->ang)).GetEntry();   
-    entry_[1] = poseLayout->Add("Vel", value->speed).GetEntry(); 
-};
-
 ShuffleboardItem<SwervePose::Pose>::ShuffleboardItem(ItemData data, SwervePose::Pose* value):
     edit_(data.edit)
 {
@@ -153,25 +111,21 @@ void ShuffleboardItem<double>::send(){
 void ShuffleboardItem<bool>::send(){
     entry_->SetBoolean(*value_);
 }
+
 void ShuffleboardItem<int>::send(){
     entry_->SetInteger(*value_);
 }
+
 void ShuffleboardItem<units::volt_t>::send(){
     entry_->SetDouble(value_->value());
 }
+
 void ShuffleboardItem<frc::PIDController>::send(){
     entry_[0]->SetDouble(value_->GetP());
     entry_[1]->SetDouble(value_->GetI());
     entry_[2]->SetDouble(value_->GetD());
 }
-void ShuffleboardItem<Point>::send(){
-    entry_[0]->SetDouble(value_->getX());
-    entry_[1]->SetDouble(value_->getY());
-}
-void ShuffleboardItem<SwervePose::ModulePose>::send(){
-    entry_[0]->SetDouble(toDeg(value_->ang));
-    entry_[1]->SetDouble(value_->speed);
-}
+
 void ShuffleboardItem<SwervePose::Pose>::send(){
     field_.SetRobotPose(units::meter_t{value_->pos.getX()}, units::meter_t{value_->pos.getY()}, {units::radian_t{value_->ang}});
 }
@@ -200,18 +154,6 @@ void ShuffleboardItem<frc::PIDController>::edit(){
     value_->SetP(entry_[0]->GetDouble(value_->GetP()));
     value_->SetI(entry_[1]->GetDouble(value_->GetI()));
     value_->SetD(entry_[2]->GetDouble(value_->GetD()));
-}
-
-void ShuffleboardItem<Point>::edit(){
-    if(!edit_)return;
-    value_->setX(entry_[0]->GetDouble(value_->getX()));
-    value_->setY(entry_[1]->GetDouble(value_->getY()));
-}
-
-void ShuffleboardItem<SwervePose::ModulePose>::edit(){
-    if(!edit_)return;
-    value_->ang = entry_[0]->GetDouble(toRad(value_->ang));
-    value_->speed = entry_[1]->GetDouble(value_->speed);
 }
 
 void ShuffleboardItem<SwervePose::Pose>::edit(){

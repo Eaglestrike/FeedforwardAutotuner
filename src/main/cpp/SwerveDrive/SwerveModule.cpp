@@ -1,5 +1,7 @@
 #include "SwerveDrive\SwerveModule.h"
 
+#include "SwerveDrive\ShuffleboardItems\SI_SwerveModule.h"
+
 #include "Util\GeometryHelper.h"
 using namespace GeometryHelper;
 
