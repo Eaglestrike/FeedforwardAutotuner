@@ -19,9 +19,9 @@ class FFAutotuner{
         };
 
         struct FFConfig{
+            double ks;
             double kv;
             double ka;
-            double ks;
             double kg = 0.0;
         };
 
@@ -37,7 +37,7 @@ class FFAutotuner{
             double max;
         };
 
-        FFAutotuner(std::string name, FFType type, double min = 0.0, double max = 0.0);
+        FFAutotuner(std::string name, FFType type, double min = 0.0, double max = 0.0, double targTime = 1.0, double testTime = 0.0);
         double getVoltage(Poses::Pose1D currPose);
 
         void zeroBounds(double val = 0.0);
@@ -45,6 +45,9 @@ class FFAutotuner{
         void setMin(double min);
         void setMax(double max);
 
+        void setFeedforward(FFConfig config);
+
+        void ShuffleboardUpdate();
     private:
         void resetProfile(bool center);
         void resetError();
@@ -56,7 +59,8 @@ class FFAutotuner{
         double lastTime_;
 
         TrapezoidalProfile profile_;
-        double expectTime = 10.0;
+        double targTime_;
+        double testTime_;
 
         Bounds bounds_;
 

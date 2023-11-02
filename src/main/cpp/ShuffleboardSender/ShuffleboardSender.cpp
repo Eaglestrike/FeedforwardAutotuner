@@ -2,31 +2,28 @@
 
 ShuffleboardSender::ShuffleboardSender(std::string name):
     name_(name),
-    initialized_(false),
-    edit_(false),
     enabled_(false)
 {
-}
-
-void ShuffleboardSender::Initialize(bool edit){
-    edit_ = edit;
     enabled_ = true;
-    if(!initialized_){
-        tab_ = &frc::Shuffleboard::GetTab(name_);
-        initialized_ = true;
-    }
+    tab_ = &frc::Shuffleboard::GetTab(name_);
 }
 
-void ShuffleboardSender::update(){
-    if(!initialized_){
-        return;
-    }
-    if(edit_){
-        for(ShuffleboardItemInterface* item : items_){
-            item->edit();
-        }
-    }
+void ShuffleboardSender::update(bool edit){
     for(ShuffleboardItemInterface* item : items_){
-        item->send();
+        item->update(edit);
     }
 };
+
+void ShuffleboardSender::enable(){
+    enabled_ = true;
+    for(ShuffleboardItemInterface* item : items_){
+        item->enable();
+    }
+}
+
+void ShuffleboardSender::disable(){
+    enabled_ = false;
+    for(ShuffleboardItemInterface* item : items_){
+        item->disable();
+    }
+}

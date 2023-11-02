@@ -20,12 +20,6 @@ class ShuffleboardSender{
         ShuffleboardSender(std::string name);
 
         /**
-         * Initializes the tab
-        */
-        void Initialize(bool edit = false);
-        bool isInitialized(){return initialized_;}
-
-        /**
          * Pair a value on shuffleboard to the code
         */
         template <typename T> void add(ShuffleboardItem<T>* item){
@@ -35,37 +29,28 @@ class ShuffleboardSender{
         template <typename T> void add(std::string name, T* o, bool edit = false){
             items_.push_back(new ShuffleboardItem({name, tab_, edit}, o));
         }
-
+        
         /**
-         * Pose Struct:
-         * {width, height, x, y}
+         * Adds an item with the position and size of order {width, height, x, y}
+         * Coordinates start at 0, 0
         */
-        struct ShuffleboardPose{
-            int width = 1;
-            int height = 1;
-            int positionX = -1;
-            int positionY = -1;
-        };
-        template <typename T> void add(std::string name, T* o, ShuffleboardPose pose, bool edit = false){
-            items_.push_back(new ShuffleboardItem({name, tab_, edit, pose.width, pose.height, pose.positionX, pose.positionY}, o));
+        template <typename T> void add(std::string name, T* o, ShuffleboardItemInterface::ShuffleboardPose pose, bool edit = false){
+            items_.push_back(new ShuffleboardItem({name, tab_, edit, pose}, o));
         }
         
         /**
          * Updates variables by reading and configuring, and then sending the data
+         * 
+         * edit boolean enable editing
         */
-        void update();
+        void update(bool edit);
 
-        /***
-         * If the sender's edit is disabled, all items will not be able to be edited
-        */
-        void disable() {enabled_ = false;}
-        void enable(bool edit = false) {enabled_ = true; edit_ = edit;}
+        void enable();
+        void disable();
 
     private:
         std::string name_;
-
-        bool initialized_ = false;
-        bool edit_ = false;
+        
         bool enabled_ = false;
         
         frc::ShuffleboardTab* tab_;

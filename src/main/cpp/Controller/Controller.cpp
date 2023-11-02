@@ -355,7 +355,6 @@ bool Controller::getPressed(Action action){
             std::cout<<"Action"<< action << " bad mapping" << std::endl;
             return false;
     };
-    wasPressed[action] = isPressed;
     return isPressed;
 }
 

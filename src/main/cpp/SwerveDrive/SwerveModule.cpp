@@ -85,6 +85,7 @@ void SwerveModule::setTarget(SwervePose::ModulePose pose, bool volts){
 void SwerveModule::enableShuffleboard(bool edit){
     if(ShuffData_.isInitialized()){
         ShuffData_.enable(edit);
+        return;
     }
     ShuffData_.Initialize(edit);
     ShuffData_.add("Drive Volts", &driveVolts_);

@@ -19,8 +19,11 @@ void Robot::RobotInit() {
   }
   navx_->ZeroYaw();
   drive_.setNAVX(navx_);
-  drive_.enableShuffleboard(true, true);
+  drive_.enableShuffleboard(true, false);
   drive_.reset();
+
+  ShuffData_.Initialize(true);
+  ShuffData_.add("isTuning", &tuning, true);
 }
 
 /**
@@ -36,6 +39,12 @@ void Robot::RobotPeriodic() {
     drive_.zero();
   }
   drive_.Periodic();
+
+  ShuffData_.update();
+  
+  tunerX_.ShuffleboardUpdate();
+  tunerY_.ShuffleboardUpdate();
+  tunerAng_.ShuffleboardUpdate();
 }
 
 /**
@@ -60,10 +69,42 @@ void Robot::TeleopInit() {
 }
 
 void Robot::TeleopPeriodic() {
-  double xStrafe = controls_.getWithDeadContinuous(XSTRAFE) * SwerveConstants::DRIVE_MAX_VOLTS;
-  double yStrafe = -controls_.getWithDeadContinuous(YSTRAFE) * SwerveConstants::DRIVE_MAX_VOLTS;
-  double rotation = controls_.getWithDeadContinuous(ROTATION) * SwerveConstants::TURN_MAX_VOLTS;
-  drive_.SetTarget({xStrafe, yStrafe}, rotation); 
+  SwervePose::Pose swervePose = drive_.getCurrPose();
+  Poses::Pose1D xPose = {.pos = swervePose.pos.getX(),
+                         .vel = swervePose.vel.getX(),
+                         .acc = swervePose.accel.getX()};
+  Poses::Pose1D yPose = {.pos = swervePose.pos.getY(),
+                         .vel = swervePose.vel.getY(),
+                         .acc = swervePose.accel.getY()};
+  Poses::Pose1D angPose = {.pos = swervePose.ang,
+                           .vel = swervePose.angVel,
+                           .acc = swervePose.angAccel};
+  if(tuning){
+    double xVel = tunerX_.getVoltage(xPose);
+    double yVel = tunerY_.getVoltage(yPose);
+    double angVel = tunerAng_.getVoltage(angPose);
+    drive_.SetTarget({xVel, yVel}, angVel);
+  }
+  else{
+    double xStrafe = controls_.getWithDeadContinuous(XSTRAFE) * SwerveConstants::DRIVE_MAX_VOLTS;
+    double yStrafe = -controls_.getWithDeadContinuous(YSTRAFE) * SwerveConstants::DRIVE_MAX_VOLTS;
+    double rotation = controls_.getWithDeadContinuous(ROTATION) * SwerveConstants::TURN_MAX_VOLTS;
+    drive_.SetTarget({xStrafe, yStrafe}, rotation);
+
+    if(controls_.getPressedOnce(SET_BOUNDS)){
+      tunerX_.zeroBounds(xPose.pos);
+      tunerY_.zeroBounds(yPose.pos);
+      tunerAng_.zeroBounds(angPose.pos);
+    }
+    if(controls_.getPressed(SET_BOUNDS)){
+      tunerX_.expandBounds(xPose.pos);
+      tunerY_.expandBounds(yPose.pos);
+      tunerAng_.expandBounds(angPose.pos);
+    }
+  }
+  if(controls_.getPressedOnce(TOGGLE_START)){
+    tuning = !tuning;
+  }
   drive_.TeleopPeriodic();
 }
 

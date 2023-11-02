@@ -7,10 +7,20 @@
 namespace Actions{
     enum Action{
         NONE = -1,
-        XSTRAFE,
-        YSTRAFE,
-        ROTATION,
-        ZERO,
+        SET_BOUNDS,
+        TOGGLE_START,
+        SWERVE_STRAFEX,
+        SWERVE_STRAFEY,
+        SWERVE_ROTATION,
+        ZERO_DRIVE_PID,
+        ZERO_YAW,
+        ELEVATOR_UPDATE,
+        ELEVATOR_EXTEND_LOW,
+        ELEVATOR_EXTEND_MID,
+        ELEVATOR_EXTEND_HIGH,
+        ELEVATOR_EXTEND_STOWED,
+        ELEVATOR_RANGE,
+        ELEVATOR_SET_MANUAL,
         ACTION_COUNT //Just the number of actions, as it is at the end of a enum
     };
 
@@ -36,39 +46,31 @@ namespace ControllerMapData{
     //Buttons are structs in the form of {Joystick, ButtonData}
     //There are already some named ButtonData and Buttons
     const std::vector<ControlMapElement> ButtonMap = {
-        {{LJOY, X_AXIS},     XSTRAFE},
-        {{LJOY, Y_AXIS},     YSTRAFE},
-        {{LJOY, TRIGGER},      NONE},
-        {{LJOY, B_2},          NONE},
-        {{LJOY, B_4},          NONE},
+        {{LJOY, X_AXIS},   SWERVE_STRAFEX},
+        {{LJOY, Y_AXIS},   SWERVE_STRAFEY},
+        {{LJOY, TRIGGER}, SET_BOUNDS},
+        {{LJOY, B_2},   TOGGLE_START},
+        {{LJOY, B_4},           NONE},
 
-        {{RJOY, X_AXIS},    ROTATION},
+        {{RJOY, X_AXIS},    SWERVE_ROTATION},
         {{RJOY, Y_AXIS},        NONE},
-        {{RJOY, TRIGGER},       ZERO},
+        {{RJOY, TRIGGER},       ZERO_YAW},
         {{RJOY, B_2},           NONE},
-        {{RJOY, B_3},          NONE},
+        {{RJOY, B_3},           NONE},
         {{RJOY, B_4},           NONE},
         
         {XBOX_LJOY_X,           NONE},
-        {XBOX_LJOY_Y,    NONE}, 
-        {XBOX_LJOY_Y,  NONE},
-        {XBOX_RJOY_X,           NONE},
-        {XBOX_RJOY_Y,     NONE},
-        {XBOX_LTRIGGER,  NONE},
-        {XBOX_LTRIGGER,  NONE},
-        {XBOX_RTRIGGER,  NONE},
-        {XBOX_A_BUTTON ,        NONE},
-        {XBOX_B_BUTTON ,      NONE},
-        {XBOX_X_BUTTON ,  NONE},
-        {XBOX_Y_BUTTON ,     NONE},
-        {XBOX_L_BUMPER ,  NONE},
-        {XBOX_R_BUMPER ,   NONE},
-        {{XBOX, B_7},    NONE},
-        {{XBOX, B_8},   NONE},
-
-        {BB_UP,              NONE},
-        {BB_LEFT,         NONE},
-        {BB_RIGHT,       NONE}
+        {XBOX_LJOY_Y,           NONE}, 
+        {XBOX_LTRIGGER,         ELEVATOR_SET_MANUAL},
+        {XBOX_RTRIGGER,         NONE},
+        {XBOX_RJOY_X,           ELEVATOR_RANGE},
+        {XBOX_RJOY_Y,           NONE},
+        {XBOX_A_BUTTON ,        ELEVATOR_UPDATE},
+        {XBOX_B_BUTTON ,        ELEVATOR_EXTEND_STOWED},
+        {XBOX_X_BUTTON ,        ELEVATOR_EXTEND_LOW},
+        {XBOX_Y_BUTTON ,        ELEVATOR_EXTEND_MID},
+        {XBOX_L_BUMPER ,        ELEVATOR_EXTEND_HIGH},
+        {XBOX_R_BUMPER ,        NONE}
     };
 
     //Allows for maps of buttons to values, such as the index of the buttonboard

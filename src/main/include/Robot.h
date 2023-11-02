@@ -15,6 +15,7 @@
 #include "SwerveDrive\SwerveDrive.h"
 #include "FFAutotuner\FFAutotuner.h"
 #include "Controller\Controller.h"
+#include "ShuffleboardSender\ShuffleboardSender.h"
 
 class Robot : public frc::TimedRobot {
     public:
@@ -33,9 +34,14 @@ class Robot : public frc::TimedRobot {
 
     private:
         SwerveDrive drive_{"Drivebase"};
-        FFAutotuner tunerX{"Swerve X", FFAutotuner::SIMPLE};
-        FFAutotuner tunerY{"Swerve Y", FFAutotuner::SIMPLE};
+        bool tuning = false;
+        FFAutotuner tunerX_{"Swerve X", FFAutotuner::SIMPLE};
+        FFAutotuner tunerY_{"Swerve Y", FFAutotuner::SIMPLE};
+        FFAutotuner tunerAng_{"Swerve Ang", FFAutotuner::SIMPLE};
 
         AHRS* navx_;
         Controller controls_;
+
+        ShuffleboardSender ShuffData_{"Robot"};
 };
+

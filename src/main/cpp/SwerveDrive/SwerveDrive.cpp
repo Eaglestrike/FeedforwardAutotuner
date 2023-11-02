@@ -82,18 +82,22 @@ void SwerveDrive::TeleopPeriodic(){
  * i.e. tell what the modules to do
 */
 void SwerveDrive::drive(){
-    if(targetPose_.angVel == 0.0){
+    double angVel = targetPose_.angVel;
+    if(angVel == 0.0){
         if(!isHoldingAng_){
             isHoldingAng_ = true;
             holdingAng_ = currentPose_.ang;
         }
-        double angleError = GeometryHelper::getAngDiff(holdingAng_, currentPose_.ang);
+        double angleError = GeometryHelper::getAngDiff(currentPose_.ang, holdingAng_);
         if(abs(angleError) < 0.3){
-            targetPose_.angVel += 2.5 * angleError;
+            angVel += 3.5 * angleError;
+        }
+        else{
+            isHoldingAng_ = false;
         }
     }
     else{
-        holdingAng_ = false;
+        isHoldingAng_ = false;
     }
     for(SwerveModule* module : modules_){
         Vector angVelVec = module->getPos() - pivot_; //Get vector from pivot to module
@@ -101,7 +105,7 @@ void SwerveDrive::drive(){
 
         //Adds tangential velocity, which is just the target tangential velocity (rotated by the robot's pose)
         //Adds the rotational velocity, which is the angVelVec times the angular velocity: v = r*w
-        Vector moduleVec = targetPose_.vel.rotate(-currentPose_.ang) + (angVelVec*targetPose_.angVel);
+        Vector moduleVec = targetPose_.vel.rotate(-currentPose_.ang) + (angVelVec*angVel);
 
         //std::cout<<"Target for "<<module->getName()<<": "<<moduleVec.toString()<<std::endl;
         double speed = moduleVec.originDist();
@@ -150,6 +154,9 @@ void SwerveDrive::enableShuffleboard(bool edit, bool modules){
 
     ShuffData_.add("Target Ang Vel", &targetPose_.angVel);
     ShuffData_.add("Target Vel", &targetPose_.vel);
+
+    ShuffData_.add("Holding Ang", &holdingAng_);
+    ShuffData_.add("Is Holding Ang", &isHoldingAng_);
 }
 
 void SwerveDrive::disableSuffleboard(){
