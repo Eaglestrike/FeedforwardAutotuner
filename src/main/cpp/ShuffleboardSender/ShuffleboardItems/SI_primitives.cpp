@@ -3,47 +3,47 @@
 
 //Constructor
 ShuffleboardItem<double>::ShuffleboardItem(ItemData data, double* value):
-    ShuffleboardItemInterface(data)
+    BaseShuffleboardItem(data)
 {
     value_ = value;
     entry_ = ShuffleboardHelper::createItem(data, *value);
 }
 
 ShuffleboardItem<bool>::ShuffleboardItem(ItemData data, bool* value):
-    ShuffleboardItemInterface(data)
+    BaseShuffleboardItem(data)
 {
     value_ = value;
     entry_ = ShuffleboardHelper::createItem(data, *value);
 }
 
 ShuffleboardItem<int>::ShuffleboardItem(ItemData data, int* value):
-    ShuffleboardItemInterface(data)
+    BaseShuffleboardItem(data)
 {
     value_ = value;
     entry_ = ShuffleboardHelper::createItem(data, *value);
 }
 
 //Send
-void ShuffleboardItem<double>::coreSend(){
+void ShuffleboardItem<double>::send(){
     entry_->SetDouble(*value_);
 }
 
-void ShuffleboardItem<bool>::coreSend(){
+void ShuffleboardItem<bool>::send(){
     entry_->SetBoolean(*value_);
 }
 
-void ShuffleboardItem<int>::coreSend(){
+void ShuffleboardItem<int>::send(){
     entry_->SetInteger(*value_);
 }
 
 //Edit
-void ShuffleboardItem<double>::coreEdit(){
+void ShuffleboardItem<double>::edit(){
     *value_ = entry_->GetDouble(*value_);
 }
-void ShuffleboardItem<bool>::coreEdit(){
+void ShuffleboardItem<bool>::edit(){
     *value_ = entry_->GetBoolean(*value_);
 }
-void ShuffleboardItem<int>::coreEdit(){
+void ShuffleboardItem<int>::edit(){
     *value_ = entry_->GetInteger(*value_);
 }
 

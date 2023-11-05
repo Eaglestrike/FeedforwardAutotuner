@@ -2,15 +2,15 @@
 
 #include "ShuffleboardSender/ShuffleboardItem.h"
 
-template<> class ShuffleboardItem<frc::PIDController>: public ShuffleboardItemInterface{
+template<> class ShuffleboardItem<frc::PIDController>: public BaseShuffleboardItem{
     public:
         ShuffleboardItem(ItemData data, frc::PIDController* value);
         void enable() override;
         void disable() override;
         
     private:
-        void coreSend() override;
-        void coreEdit() override;
+        void send() override;
+        void edit() override;
         frc::PIDController* value_;
         nt::GenericEntry* entry_[3]; //[P, I, D]
 };

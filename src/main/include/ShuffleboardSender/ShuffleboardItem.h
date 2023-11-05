@@ -23,8 +23,31 @@
  * int
  * frc::PIDController
 */
+
+class BaseShuffleboardItem : public ShuffleboardItemInterface{
+    public:
+        BaseShuffleboardItem(ItemData data):ShuffleboardItemInterface(data){};
+
+        void update(bool canEdit) override{
+            if(itemHasChanged()){
+                send();
+            }
+            if(data_.edit && canEdit){
+                edit();
+            }
+        }
+
+        virtual bool itemHasChanged(){
+            return true;
+        };
+
+    private:
+        virtual void send() = 0;
+        virtual void edit() = 0;
+};
+
 template <typename T>
-class ShuffleboardItem : public ShuffleboardItemInterface{
+class ShuffleboardItem : public BaseShuffleboardItem{
     public:
         ShuffleboardItem(ItemData data, T* value):
             ShuffleboardItemInterface(data)
@@ -50,10 +73,10 @@ class ShuffleboardItem : public ShuffleboardItemInterface{
         };
 
     private:
-        void coreSend() override{
+        void send() override{
             entry_->SetDouble(value_->value());
         }
-        void coreEdit() override{
+        void edit() override{
             *value_ = T{entry_->GetDouble(value_->value())};
         }
 

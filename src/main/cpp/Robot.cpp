@@ -22,7 +22,6 @@ void Robot::RobotInit() {
   drive_.enableShuffleboard(true, false);
   drive_.reset();
 
-  ShuffData_.Initialize(true);
   ShuffData_.add("isTuning", &tuning, true);
 }
 
@@ -40,7 +39,7 @@ void Robot::RobotPeriodic() {
   }
   drive_.Periodic();
 
-  ShuffData_.update();
+  ShuffData_.update(true);
   
   tunerX_.ShuffleboardUpdate();
   tunerY_.ShuffleboardUpdate();

@@ -1,7 +1,7 @@
 #include "ShuffleboardSender/ShuffleboardItems/SI_PIDController.h"
 
 ShuffleboardItem<frc::PIDController>::ShuffleboardItem(ItemData data, frc::PIDController* value):
-    ShuffleboardItemInterface(data)
+    BaseShuffleboardItem(data)
 {
     value_ = value;
 
@@ -11,13 +11,13 @@ ShuffleboardItem<frc::PIDController>::ShuffleboardItem(ItemData data, frc::PIDCo
     entry_[2] = pidLayout->Add("D", value->GetD()).GetEntry(); 
 };
 
-void ShuffleboardItem<frc::PIDController>::coreSend(){
+void ShuffleboardItem<frc::PIDController>::send(){
     entry_[0]->SetDouble(value_->GetP());
     entry_[1]->SetDouble(value_->GetI());
     entry_[2]->SetDouble(value_->GetD());
 }
 
-void ShuffleboardItem<frc::PIDController>::coreEdit(){
+void ShuffleboardItem<frc::PIDController>::edit(){
     value_->SetP(entry_[0]->GetDouble(value_->GetP()));
     value_->SetI(entry_[1]->GetDouble(value_->GetI()));
     value_->SetD(entry_[2]->GetDouble(value_->GetD()));

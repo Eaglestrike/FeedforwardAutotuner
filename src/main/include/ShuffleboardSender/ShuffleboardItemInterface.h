@@ -22,21 +22,17 @@ class ShuffleboardItemInterface{
         struct ItemData{
             std::string name;
             frc::ShuffleboardTab* tab;
-            bool edit;
-            ShuffleboardPose pose;
+            bool edit = false;
+            ShuffleboardPose pose = {1,1,-1,-1};
         };
         
         ShuffleboardItemInterface(ItemData data);
 
-        void update(bool edit);
-        virtual bool itemHasChanged(); //If value in code has changed
+        virtual void update(bool edit) = 0;
 
         virtual void enable() = 0;
         virtual void disable() = 0;
 
     protected:
-        virtual void coreSend() = 0;
-        virtual void coreEdit() = 0;
-        
         ItemData data_;
 };
