@@ -45,6 +45,7 @@ class FFAutotuner{
         void setMin(double min);
         void setMax(double max);
 
+        FFConfig getFeedforward();
         void setFeedforward(FFConfig config);
 
         void ShuffleboardUpdate();

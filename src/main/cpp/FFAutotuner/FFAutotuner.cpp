@@ -70,32 +70,22 @@ double FFAutotuner::getVoltage(Pose1D currPose){
     double maxVel = profile_.getMaxVel();
     double maxAcc = profile_.getMaxAcc();
     
-    double stcComp = Utils::sign(expectedPose.vel);
     double velComp = expectedPose.vel / maxVel;
+    double stcComp = Utils::sign(expectedPose.vel) - velComp; //static component will be inverted trapezoid
     double accComp = expectedPose.acc / maxAcc;
     double grvComp;
     switch(ffType_){
-        case SIMPLE:
-            grvComp = 0.0;
-            break;
-        case ARM:
-            grvComp = std::cos(expectedPose.pos);
-            break;
-        case ELEVATOR:
-            grvComp = 1.0;
-            break;
-        default:
-            grvComp = 0.0;
+        case SIMPLE:   grvComp = 0.0;                        break;
+        case ARM:      grvComp = std::cos(expectedPose.pos); break;
+        case ELEVATOR: grvComp = 1.0;                        break;
+        default:       grvComp = 0.0;
     }
-
     
     double absStcComp = std::abs(stcComp);
     double absVelComp = std::abs(velComp);
     double absAccComp = std::abs(accComp);
     double absGrvComp = std::abs(grvComp);
-
     double totAbsComp = absVelComp + absAccComp + absStcComp + absGrvComp;
-    
     if(totAbsComp != 0){
         error_.gainError.ks += error.vel * stcComp/totAbsComp;
         error_.gainError.kv += error.vel * velComp/totAbsComp;
@@ -108,11 +98,11 @@ double FFAutotuner::getVoltage(Pose1D currPose){
     lastTime_ = frc::Timer::GetFPGATimestamp().value();
     switch(ffType_){
         case SIMPLE:
-            return stcComp*ffTesting_.ks + expectedPose.vel*ffTesting_.kv + expectedPose.acc*ffTesting_.ka;
+            return Utils::sign(expectedPose.vel)*ffTesting_.ks + expectedPose.vel*ffTesting_.kv + expectedPose.acc*ffTesting_.ka;
         case ARM:
-            return stcComp*ffTesting_.ks + expectedPose.vel*ffTesting_.kv + expectedPose.acc*ffTesting_.ka + grvComp*ffTesting_.kg;
+            return Utils::sign(expectedPose.vel)*ffTesting_.ks + expectedPose.vel*ffTesting_.kv + expectedPose.acc*ffTesting_.ka + std::cos(expectedPose.pos)*ffTesting_.kg;
         case ELEVATOR:
-            return stcComp*ffTesting_.ks + expectedPose.vel*ffTesting_.kv + expectedPose.acc*ffTesting_.ka + ffTesting_.kg;
+            return Utils::sign(expectedPose.vel)*ffTesting_.ks + expectedPose.vel*ffTesting_.kv + expectedPose.acc*ffTesting_.ka + ffTesting_.kg;
         default:
             return 0.0;
     }
@@ -149,7 +139,7 @@ void FFAutotuner::resetProfile(bool center){
         nextTarget = (bounds_.min + bounds_.max)/2.0;
     }
     else{
-        nextTarget = bounds_.min + (maxDist * (random() % 100000L) / 100000.0);
+        nextTarget = bounds_.min + (maxDist * (random() % 100000L) / 100000.0); //Random next target
     }
     profile_.setTarget(currPose_, {.pos = nextTarget, .vel = 0.0, .acc = 0.0});
     std::cout<<"Set " << name_ << " target: " << nextTarget <<std::endl;
@@ -177,6 +167,10 @@ void FFAutotuner::setMin(double min){
 
 void FFAutotuner::setMax(double max){
     bounds_.max = max;
+}
+
+FFAutotuner::FFConfig FFAutotuner::getFeedforward(){
+    return ffTesting_;
 }
 
 void FFAutotuner::setFeedforward(FFConfig config){
