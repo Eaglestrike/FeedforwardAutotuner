@@ -78,9 +78,9 @@ void Robot::TeleopPeriodic() {
                            .vel = swervePose.angVel,
                            .acc = swervePose.angAccel};
   if(tuning){
-    double xVel = tunerX_.getVoltage(xPose);
-    double yVel = tunerY_.getVoltage(yPose);
-    double angVel = tunerAng_.getVoltage(angPose);
+    double xVel = tunerX_.getVoltage();
+    double yVel = tunerY_.getVoltage();
+    double angVel = tunerAng_.getVoltage();
     drive_.SetTarget({xVel, yVel}, angVel);
   }
   else{

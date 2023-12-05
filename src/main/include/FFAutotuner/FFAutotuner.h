@@ -27,7 +27,7 @@ class FFAutotuner{
 
         enum State{
             TUNING,
-            HOLDING_POS,
+            IDLE,
             RECENTER_FROM_MIN,
             RECENTER_FROM_MAX
         };
@@ -38,7 +38,10 @@ class FFAutotuner{
         };
 
         FFAutotuner(std::string name, FFType type, double min = 0.0, double max = 0.0, double targTime = 1.0, double testTime = 0.0);
-        double getVoltage(Poses::Pose1D currPose);
+        void Start();
+        void Stop();
+        void setPose(Poses::Pose1D currPose);
+        double getVoltage();
 
         void zeroBounds(double val = 0.0);
         void expandBounds(double val);
@@ -47,7 +50,7 @@ class FFAutotuner{
 
         FFConfig getFeedforward();
         void setFeedforward(FFConfig config);
-
+        
         void ShuffleboardUpdate();
     private:
         void resetProfile(bool center);
@@ -68,11 +71,14 @@ class FFAutotuner{
         FFConfig ffTesting_;
         double s_ = 0.1;
 
+        double precision_ = 100.0;
         struct FFError{
             FFConfig gainError;
             Poses::Pose1D totalError;
             Poses::Pose1D absTotalError;
         } error_;
+        std::vector<double> pastVelErrors_;
+        std::vector<double> pastPosErrors_;
 
         ShuffleboardSender ShuffData_;
 };
