@@ -129,6 +129,14 @@ class Point{
             return *(new Point(x_ / k, y_ / k));
         }
 
+        bool operator!= (const Point& p){
+            return (x_ != p.x_) || (y_ != p.y_);
+        }
+
+        bool operator== (const Point& p){
+            return (x_ == p.x_) && (y_ == p.y_);
+        }
+
     private:
         double x_;
         double y_;

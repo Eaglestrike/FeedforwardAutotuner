@@ -33,7 +33,8 @@ class Robot : public frc::TimedRobot {
         void SimulationPeriodic() override;
 
     private:
-        SwerveDrive drive_{"Drivebase"};
+        SwerveDrive drive_{"Drivebase", true, true, true};
+        
         bool tuning = false;
         FFAutotuner tunerX_{"Swerve X", FFAutotuner::SIMPLE};
         FFAutotuner tunerY_{"Swerve Y", FFAutotuner::SIMPLE};

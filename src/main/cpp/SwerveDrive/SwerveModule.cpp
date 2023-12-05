@@ -1,25 +1,24 @@
 #include "SwerveDrive\SwerveModule.h"
 
-#include "SwerveDrive\ShuffleboardItems\SI_SwerveModule.h"
+#include "SwerveDrive\ShuffleboardItems\SI_SwerveModule.hpp"
 
 #include "Util\GeometryHelper.h"
 using namespace GeometryHelper;
 
-SwerveModule::SwerveModule(SwerveConstants::SwerveStruct swerveMod):
-    name_(swerveMod.name),
+SwerveModule::SwerveModule(SwerveConstants::SwerveStruct swerveMod, bool enabled, bool shuffleboard):
+    Mechanism(swerveMod.name, enabled, shuffleboard),
     driveMotor_(swerveMod.driveID, SwerveConstants::canBus), driveVolts_(0.0),
     turnMotor_(swerveMod.turnID, SwerveConstants::canBus), turnVolts_(0.0),
     cancoder_(swerveMod.encoderID, SwerveConstants::canBus),
     encoderOffset_(swerveMod.encoderOffset), encoderInverted_(swerveMod.encoderInverted),
     turnPID_(swerveMod.turnPID),
-    pos_(swerveMod.pos),
-    ShuffData_(swerveMod.name)
+    pos_(swerveMod.pos)
 {
     driveMotor_.SetNeutralMode(NeutralMode::Coast);
     turnMotor_.SetNeutralMode(NeutralMode::Coast);
 }
 
-void SwerveModule::Periodic(){
+void SwerveModule::CorePeriodic(){
     //Calc velocity
     double wheelAng = toRad((encoderInverted_?-1.0:1.0)*cancoder_.GetAbsolutePosition() + encoderOffset_);
     double driveAngVel = driveMotor_.GetSelectedSensorVelocity() * 10.0 / SwerveConstants::TICKS_PER_RADIAN  * SwerveConstants::WHEEL_RADIUS;
@@ -27,16 +26,14 @@ void SwerveModule::Periodic(){
     currPose_.ang = wheelAng;
     currPose_.speed = wheelVel;
     vel_ = Vector(cos(wheelAng) * wheelVel , sin(wheelAng) * wheelVel);
-
-    ShuffData_.update();
 }
 
-void SwerveModule::TeleopInit(){
+void SwerveModule::CoreTeleopInit(){
     driveMotor_.SetNeutralMode(NeutralMode::Brake);
     turnMotor_.SetNeutralMode(NeutralMode::Brake);
 };
 
-void SwerveModule::TeleopPeriodic(){
+void SwerveModule::CoreTeleopPeriodic(){
     double driveTarg = std::clamp(targetPose_.speed, -maxDriveVolts_, maxDriveVolts_);
     if(inverted_){
         driveTarg = -driveTarg;
@@ -63,12 +60,12 @@ void SwerveModule::TeleopPeriodic(){
     turnMotor_.SetVoltage(turnVolts_);
 }
 
-void SwerveModule::DisabledInit(){
+void SwerveModule::CoreDisabledInit(){
     driveMotor_.SetNeutralMode(NeutralMode::Coast);
     turnMotor_.SetNeutralMode(NeutralMode::Coast);
 }
 
-void SwerveModule::DisabledPeriodic(){
+void SwerveModule::CoreDisabledPeriodic(){
     driveMotor_.SetVoltage(units::volt_t{0.0});
     turnMotor_.SetVoltage(units::volt_t{0.0});
 }
@@ -82,25 +79,20 @@ void SwerveModule::setTarget(SwervePose::ModulePose pose, bool volts){
     volts_ = volts;
 }
 
-void SwerveModule::enableShuffleboard(bool edit){
-    if(ShuffData_.isInitialized()){
-        ShuffData_.enable(edit);
-        return;
-    }
-    ShuffData_.Initialize(edit);
-    ShuffData_.add("Drive Volts", &driveVolts_);
-    ShuffData_.add("Turn Volts", &turnVolts_);
-    ShuffData_.add("Drive Max Volts", &maxDriveVolts_);
-    ShuffData_.add("Turn Max Volts", &maxTurnVolts_);
-    ShuffData_.add("Turn PID", &turnPID_, edit = true);
-    ShuffData_.add("Target Pose", &targetPose_);
-    ShuffData_.add("Volts", &volts_);
-    ShuffData_.add("Current Pose", &currPose_);
-    ShuffData_.add("Inverted", &inverted_);
+void SwerveModule::CoreShuffleboardInit(){
+    shuff_.add("Drive Volts", &driveVolts_);
+    shuff_.add("Turn Volts", &turnVolts_);
+    shuff_.add("Drive Max Volts", &maxDriveVolts_);
+    shuff_.add("Turn Max Volts", &maxTurnVolts_);
+    shuff_.add("Turn PID", &turnPID_, true);
+    shuff_.add("Target Pose", &targetPose_);
+    shuff_.add("Volts", &volts_);
+    shuff_.add("Current Pose", &currPose_);
+    shuff_.add("Inverted", &inverted_);
 }
 
-void SwerveModule::disableSuffleboard(){
-    ShuffData_.disable();
+void SwerveModule::CoreShuffleboardPeriodic(){
+    
 }
 
 std::string SwerveModule::getName(){

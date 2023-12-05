@@ -12,15 +12,7 @@ namespace Actions{
         SWERVE_STRAFEX,
         SWERVE_STRAFEY,
         SWERVE_ROTATION,
-        ZERO_DRIVE_PID,
         ZERO_YAW,
-        ELEVATOR_UPDATE,
-        ELEVATOR_EXTEND_LOW,
-        ELEVATOR_EXTEND_MID,
-        ELEVATOR_EXTEND_HIGH,
-        ELEVATOR_EXTEND_STOWED,
-        ELEVATOR_RANGE,
-        ELEVATOR_SET_MANUAL,
         ACTION_COUNT //Just the number of actions, as it is at the end of a enum
     };
 
@@ -48,9 +40,9 @@ namespace ControllerMapData{
     const std::vector<ControlMapElement> ButtonMap = {
         {{LJOY, X_AXIS},   SWERVE_STRAFEX},
         {{LJOY, Y_AXIS},   SWERVE_STRAFEY},
-        {{LJOY, TRIGGER}, SET_BOUNDS},
-        {{LJOY, B_2},   TOGGLE_START},
-        {{LJOY, B_4},           NONE},
+        {{LJOY, TRIGGER},      SET_BOUNDS},
+        {{LJOY, B_2},        TOGGLE_START},
+        {{LJOY, B_4},                NONE},
 
         {{RJOY, X_AXIS},    SWERVE_ROTATION},
         {{RJOY, Y_AXIS},        NONE},
@@ -61,15 +53,15 @@ namespace ControllerMapData{
         
         {XBOX_LJOY_X,           NONE},
         {XBOX_LJOY_Y,           NONE}, 
-        {XBOX_LTRIGGER,         ELEVATOR_SET_MANUAL},
+        {XBOX_LTRIGGER,         NONE},
         {XBOX_RTRIGGER,         NONE},
-        {XBOX_RJOY_X,           ELEVATOR_RANGE},
+        {XBOX_RJOY_X,           NONE},
         {XBOX_RJOY_Y,           NONE},
-        {XBOX_A_BUTTON ,        ELEVATOR_UPDATE},
-        {XBOX_B_BUTTON ,        ELEVATOR_EXTEND_STOWED},
-        {XBOX_X_BUTTON ,        ELEVATOR_EXTEND_LOW},
-        {XBOX_Y_BUTTON ,        ELEVATOR_EXTEND_MID},
-        {XBOX_L_BUMPER ,        ELEVATOR_EXTEND_HIGH},
+        {XBOX_A_BUTTON ,        NONE},
+        {XBOX_B_BUTTON ,        NONE},
+        {XBOX_X_BUTTON ,        NONE},
+        {XBOX_Y_BUTTON ,        NONE},
+        {XBOX_L_BUMPER ,        NONE},
         {XBOX_R_BUMPER ,        NONE}
     };
 

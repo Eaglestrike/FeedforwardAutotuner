@@ -1,15 +1,29 @@
 #include "SwerveDrive\SwerveDrive.h"
 
 #include "Util\GeometryHelper.h"
-#include "Util\ShuffleboardItems\SI_Point.h"
+#include "Util\ShuffleboardItems\SI_Point.hpp"
+
 using namespace GeometryHelper;
 
-SwerveDrive::SwerveDrive(std::string name):
-    name_(name),
-    ShuffData_(name)
+/**
+ * Constructor
+ * 
+ * @param name name
+ * @param enabled enabled
+ * @param shuffleboard drivebase shuffleboard
+ * @param mShuffleboard module shuffleboard
+*/
+SwerveDrive::SwerveDrive(std::string name, bool enabled, bool shuffleboard, bool mShuffleboard):
+    Mechanism(name, enabled, shuffleboard)
 {
     for(int i = 0; i < SwerveConstants::NUMSWERVE; i++){
-        modules_[i] = new SwerveModule(SwerveConstants::MODULES[i]);
+        modules_[i] = new SwerveModule(SwerveConstants::MODULES[i], enabled, mShuffleboard);
+    }
+}
+
+void SwerveDrive::CoreInit(){
+    for(SwerveModule* module : modules_){
+        module->Init();
     }
 }
 
@@ -25,13 +39,11 @@ void SwerveDrive::zero(){
     }
 }
 
-void SwerveDrive::Periodic(){
+void SwerveDrive::CorePeriodic(){
     for(SwerveModule* module : modules_){
         module->Periodic();
     }
     updatePose();
-
-    ShuffData_.update();
 }
 
 void SwerveDrive::updatePose(){
@@ -64,13 +76,13 @@ void SwerveDrive::updatePose(){
     lastUpdate_ = frc::Timer::GetFPGATimestamp().value();
 }
 
-void SwerveDrive::TeleopInit(){
+void SwerveDrive::CoreTeleopInit(){
     for(SwerveModule* module : modules_){
         module->TeleopInit(); //Motors to brake to not be scooted by enemy
     }
 }
 
-void SwerveDrive::TeleopPeriodic(){
+void SwerveDrive::CoreTeleopPeriodic(){
     drive(); //Set module targets
     for(SwerveModule* module : modules_){
         module->TeleopPeriodic(); //Drive motors and stuff
@@ -118,13 +130,13 @@ void SwerveDrive::drive(){
     }
 }
 
-void SwerveDrive::DisabledInit(){
+void SwerveDrive::CoreDisabledInit(){
     for(SwerveModule* module : modules_){
         module->DisabledInit(); //Sets the motor mode to coast (so robot can be scooted by ppl)
     }
 }
 
-void SwerveDrive::DisabledPeriodic(){
+void SwerveDrive::CoreDisabledPeriodic(){
     for(SwerveModule* module : modules_){
         module->DisabledPeriodic(); //Tell robot to actively do nothing
     }
@@ -135,32 +147,23 @@ void SwerveDrive::DisabledPeriodic(){
  * @param edit can edit target values
  * @param modules enable module prints
 */
-void SwerveDrive::enableShuffleboard(bool edit, bool modules){
-    if(modules){
-        for(SwerveModule* module : modules_){
-            module->enableShuffleboard(edit);
-        }
-    }
-    if(ShuffData_.isInitialized()){
-        ShuffData_.enable(edit);
-    }
-    ShuffData_.Initialize(edit);
-    ShuffData_.add("Current Ang", &currentPose_.ang);
-    ShuffData_.add("Current Ang Vel", &currentPose_.angVel);
-    ShuffData_.add("Current Ang Acc", &currentPose_.angAccel);
-    ShuffData_.add("Current Pos", &currentPose_.pos);
-    ShuffData_.add("Current Vel", &currentPose_.vel);
-    ShuffData_.add("Current Acc", &currentPose_.accel);
+void SwerveDrive::CoreShuffleboardInit(){
+    shuff_.add("Current Ang", &currentPose_.ang);
+    shuff_.add("Current Ang Vel", &currentPose_.angVel);
+    shuff_.add("Current Ang Acc", &currentPose_.angAccel);
+    shuff_.add("Current Pos", &currentPose_.pos);
+    shuff_.add("Current Vel", &currentPose_.vel);
+    shuff_.add("Current Acc", &currentPose_.accel);
 
-    ShuffData_.add("Target Ang Vel", &targetPose_.angVel);
-    ShuffData_.add("Target Vel", &targetPose_.vel);
+    shuff_.add("Target Ang Vel", &targetPose_.angVel);
+    shuff_.add("Target Vel", &targetPose_.vel);
 
-    ShuffData_.add("Holding Ang", &holdingAng_);
-    ShuffData_.add("Is Holding Ang", &isHoldingAng_);
+    shuff_.add("Holding Ang", &holdingAng_);
+    shuff_.add("Is Holding Ang", &isHoldingAng_);
 }
 
-void SwerveDrive::disableSuffleboard(){
-    ShuffData_.disable();
+void SwerveDrive::CoreShuffleboardPeriodic(){
+    
 }
 
 void SwerveDrive::SetTarget(Vector v, double angV, bool volts){

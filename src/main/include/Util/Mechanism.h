@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "ShuffleboardSender/ShuffleboardSender.h"
 /**
  * Base Mechanism Class
  * 
@@ -49,5 +50,5 @@ class Mechanism{
 
         std::string name_;
         bool enabled_;
-        bool shuffleboard_;
+        ShuffleboardSender shuff_;
 };

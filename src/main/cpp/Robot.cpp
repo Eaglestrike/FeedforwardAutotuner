@@ -19,7 +19,6 @@ void Robot::RobotInit() {
   }
   navx_->ZeroYaw();
   drive_.setNAVX(navx_);
-  drive_.enableShuffleboard(true, false);
   drive_.reset();
 
   ShuffData_.add("isTuning", &tuning, true);
@@ -34,7 +33,7 @@ void Robot::RobotInit() {
  * LiveWindow and SmartDashboard integrated updating.
  */
 void Robot::RobotPeriodic() {
-  if(controls_.getPressed(ZERO)){
+  if(controls_.getPressed(ZERO_YAW)){
     drive_.zero();
   }
   drive_.Periodic();
@@ -85,9 +84,9 @@ void Robot::TeleopPeriodic() {
     drive_.SetTarget({xVel, yVel}, angVel);
   }
   else{
-    double xStrafe = controls_.getWithDeadContinuous(XSTRAFE) * SwerveConstants::DRIVE_MAX_VOLTS;
-    double yStrafe = -controls_.getWithDeadContinuous(YSTRAFE) * SwerveConstants::DRIVE_MAX_VOLTS;
-    double rotation = controls_.getWithDeadContinuous(ROTATION) * SwerveConstants::TURN_MAX_VOLTS;
+    double xStrafe = controls_.getWithDeadContinuous(SWERVE_STRAFEX) * SwerveConstants::DRIVE_MAX_VOLTS;
+    double yStrafe = -controls_.getWithDeadContinuous(SWERVE_STRAFEY) * SwerveConstants::DRIVE_MAX_VOLTS;
+    double rotation = controls_.getWithDeadContinuous(SWERVE_ROTATION) * SwerveConstants::TURN_MAX_VOLTS;
     drive_.SetTarget({xStrafe, yStrafe}, rotation);
 
     if(controls_.getPressedOnce(SET_BOUNDS)){

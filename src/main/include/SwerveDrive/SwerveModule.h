@@ -10,7 +10,9 @@
 #include <cmath>
 #include <iostream>
 
-#include "Util\Point.h"
+#include "Util/Point.h"
+#include "Util/Mechanism.h"
+
 #include "SwervePose.h"
 #include "SwerveConstants.h"
 #include "ShuffleboardSender\ShuffleboardSender.h"
@@ -19,16 +21,10 @@
 #define M_PI 3.14159265358979323846	/* pi */
 #endif
 
-class SwerveModule{
+class SwerveModule: public Mechanism{
     public:
         SwerveModule() = default;
-        SwerveModule(SwerveConstants::SwerveStruct swerveMod);
-
-        void Periodic();
-        void TeleopInit();
-        void TeleopPeriodic();
-        void DisabledInit();
-        void DisabledPeriodic();
+        SwerveModule(SwerveConstants::SwerveStruct swerveMod, bool enabled, bool shuffleboard);
 
         void zero();
 
@@ -42,6 +38,15 @@ class SwerveModule{
         Vector getVel();
 
     private:
+        void CorePeriodic() override;
+        void CoreTeleopInit() override;
+        void CoreTeleopPeriodic() override;
+        void CoreDisabledInit() override;
+        void CoreDisabledPeriodic() override;
+
+        void CoreShuffleboardInit() override;
+        void CoreShuffleboardPeriodic() override;
+
         const std::string name_;
 
         WPI_TalonFX driveMotor_;
@@ -66,6 +71,4 @@ class SwerveModule{
         Point pos_; //Position on robot, accessed by swerveDrive, stored in module
 
         bool inverted_ = false;
-
-        ShuffleboardSender ShuffData_;
 };

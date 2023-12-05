@@ -53,7 +53,7 @@ class ShuffleboardItem : public BaseShuffleboardItem{
             ShuffleboardItemInterface(data)
         {
             value_ = value;
-            entry_ = ShuffleboardHelper::createItem(data, *value);
+            entry_ = ShuffleboardHelper::createItem(data, value->value());
         };
 
         bool itemHasChanged() override{
@@ -63,12 +63,12 @@ class ShuffleboardItem : public BaseShuffleboardItem{
             return hasChanged;
         } 
 
-        void enable() override{
+        void enable(){
             if(!entry_->Exists()){
                 entry_ = ShuffleboardHelper::createItem(data_, value_->value());
             }
         };
-        void disable() override{
+        void disable(){
             entry_->Unpublish();
         };
 
@@ -87,3 +87,4 @@ class ShuffleboardItem : public BaseShuffleboardItem{
 
 #include "ShuffleboardItems/SI_primitives.h"
 #include "ShuffleboardItems/SI_PIDController.h"
+#include "ShuffleboardItems/SI_units.hpp"

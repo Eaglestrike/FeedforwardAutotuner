@@ -6,23 +6,19 @@
 
 #include <AHRS.h>
 
+#include "Util/Mechanism.h"
+
 #include "SwerveModule.h"
 #include "SwerveConstants.h"
 #include "SwervePose.h"
 
 #include "ShuffleboardSender/ShuffleboardSender.h"
 
-class SwerveDrive{
+class SwerveDrive : public Mechanism{
     public:
-        SwerveDrive(std::string name);
+        SwerveDrive(std::string name, bool enabled, bool shuffleboard, bool mShuffleboard = false);
         void reset();
         void zero();
-
-        void Periodic();
-        void TeleopInit();
-        void TeleopPeriodic();
-        void DisabledInit();
-        void DisabledPeriodic();
 
         void drive();
         
@@ -32,10 +28,17 @@ class SwerveDrive{
         
         void setNAVX(AHRS* navx) {navx_ = navx;}
 
-        void enableShuffleboard(bool edit = false, bool module = false);
-        void disableSuffleboard();
-
     private:
+        void CoreInit() override;
+        void CorePeriodic() override;
+        void CoreTeleopInit() override;
+        void CoreTeleopPeriodic() override;
+        void CoreDisabledInit() override;
+        void CoreDisabledPeriodic() override;
+
+        void CoreShuffleboardInit() override;
+        void CoreShuffleboardPeriodic() override;
+
         void updatePose();
 
         const std::string name_;
@@ -53,6 +56,4 @@ class SwerveDrive{
         double lastUpdate_;
 
         AHRS* navx_;
-
-        ShuffleboardSender ShuffData_;
 };
