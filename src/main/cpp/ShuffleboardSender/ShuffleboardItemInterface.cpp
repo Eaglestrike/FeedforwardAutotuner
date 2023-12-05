@@ -5,3 +5,7 @@ ShuffleboardItemInterface::ShuffleboardItemInterface(ItemData data):
 {
     
 }
+
+std::string ShuffleboardItemInterface::getName(){
+    return data_.name;
+}

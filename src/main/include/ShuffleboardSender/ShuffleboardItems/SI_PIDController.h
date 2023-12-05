@@ -5,7 +5,7 @@
 template<> class ShuffleboardItem<frc::PIDController>: public BaseShuffleboardItem{
     public:
         ShuffleboardItem(ItemData data, frc::PIDController* value);
-        void enable() override;
+        void enable(frc::ShuffleboardTab* tab) override;
         void disable() override;
         
     private:

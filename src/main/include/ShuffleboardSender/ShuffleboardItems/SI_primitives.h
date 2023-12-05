@@ -6,7 +6,7 @@ template<> class ShuffleboardItem<double> : public BaseShuffleboardItem{
     public:
         ShuffleboardItem(ItemData data, double* value);
         bool itemHasChanged() override;
-        void enable() override;
+        void enable(frc::ShuffleboardTab* tab) override;
         void disable() override;
     private:
         void send() override;
@@ -20,7 +20,7 @@ template<> class ShuffleboardItem<bool>: public BaseShuffleboardItem{
     public:
         ShuffleboardItem(ItemData data, bool* value);
         bool itemHasChanged() override;
-        void enable() override;
+        void enable(frc::ShuffleboardTab* tab) override;
         void disable() override;
     private:
         void send() override;
@@ -34,7 +34,7 @@ template<> class ShuffleboardItem<int>: public BaseShuffleboardItem{
     public:
         ShuffleboardItem(ItemData data, int* value);
         bool itemHasChanged() override;
-        void enable() override;
+        void enable(frc::ShuffleboardTab* tab) override;
         void disable() override;
     private:
         void send() override;

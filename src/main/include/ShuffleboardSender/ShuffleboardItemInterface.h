@@ -30,8 +30,10 @@ class ShuffleboardItemInterface{
 
         virtual void update(bool edit) = 0;
 
-        virtual void enable() = 0;
+        virtual void enable(frc::ShuffleboardTab* tab) = 0;
         virtual void disable() = 0;
+
+        std::string getName();
 
     protected:
         ItemData data_;

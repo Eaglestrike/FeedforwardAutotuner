@@ -1,22 +1,51 @@
-#include "ShuffleboardSender\ShuffleboardSender.h"
+#include "ShuffleboardSender/ShuffleboardSender.h"
 
-#include "ShuffleboardSender\ShuffleboardButton.h"
+#include "ShuffleboardSender/ShuffleboardButton.h"
+#include "ShuffleboardSender/ShuffleboardToggleButton.h"
 
 ShuffleboardSender::ShuffleboardSender(std::string name, bool enabled):
     name_(name),
-    enabled_(enabled)
+    enabled_(false)
 {
     if(enabled){
-        tab_ = &frc::Shuffleboard::GetTab(name_);
+        enable();
     }
 }
 
 void ShuffleboardSender::addButton(std::string name, std::function<void()> callback){
-    items_.push_back(new ShuffleboardButton({name, tab_}, callback));
+    for(ShuffleboardItemInterface* item : items_){
+        if(item->getName() == name){
+            return;
+        }
+    }
+    items_.push_back(new ShuffleboardButton({name, tab_, true}, callback));
 }
 
 void ShuffleboardSender::addButton(std::string name, std::function<void()> callback, ShuffleboardItemInterface::ShuffleboardPose pose){
+    for(ShuffleboardItemInterface* item : items_){
+        if(item->getName() == name){
+            return;
+        }
+    }
     items_.push_back(new ShuffleboardButton({name, tab_, true, pose}, callback));
+}
+
+void ShuffleboardSender::addToggleButton(std::string name, std::function<void()> callbackTrue, std::function<void()> callbackFalse, bool startVal){
+    for(ShuffleboardItemInterface* item : items_){
+        if(item->getName() == name){
+            return;
+        }
+    }
+    items_.push_back(new ShuffleboardToggleButton({name, tab_, true}, callbackTrue, callbackFalse, startVal));
+}
+
+void ShuffleboardSender::addToggleButton(std::string name, std::function<void()> callbackTrue, std::function<void()> callbackFalse, bool startVal, ShuffleboardItemInterface::ShuffleboardPose pose){
+    for(ShuffleboardItemInterface* item : items_){
+        if(item->getName() == name){
+            return;
+        }
+    }
+    items_.push_back(new ShuffleboardToggleButton({name, tab_, true, pose}, callbackTrue, callbackFalse, startVal));
 }
 
 void ShuffleboardSender::update(bool edit){
@@ -29,8 +58,9 @@ void ShuffleboardSender::update(bool edit){
 
 void ShuffleboardSender::enable(){
     enabled_ = true;
+    tab_ = &frc::Shuffleboard::GetTab(name_);
     for(ShuffleboardItemInterface* item : items_){
-        item->enable();
+        item->enable(tab_);
     }
 }
 
@@ -39,6 +69,10 @@ void ShuffleboardSender::disable(){
     for(ShuffleboardItemInterface* item : items_){
         item->disable();
     }
+    // for(std::pair<const std::string, nt::GenericEntry*> pair : keyMap_){
+    //     pair.second->Unpublish();
+    // }
+    // keyMap_.clear();
 }
 
 bool ShuffleboardSender::isEnabled(){

@@ -4,7 +4,9 @@ ShuffleboardButton::ShuffleboardButton(ItemData data, std::function<void()> call
     ShuffleboardItemInterface(data),
     callback_(callback)
 {
-    entry_ = ShuffleboardHelper::createItem(data_, false, frc::BuiltInWidgets::kToggleButton);
+    if(data_.tab){
+        entry_ = ShuffleboardHelper::createItem(data_, false, frc::BuiltInWidgets::kToggleButton);
+    }
 }
 
 void ShuffleboardButton::update(bool update){
@@ -16,8 +18,9 @@ void ShuffleboardButton::update(bool update){
     }
 }
 
-void ShuffleboardButton::enable(){
+void ShuffleboardButton::enable(frc::ShuffleboardTab* tab){
     if(!entry_->Exists()){
+        data_.tab = tab;
         entry_ = ShuffleboardHelper::createItem(data_, false, frc::BuiltInWidgets::kToggleButton);
     }
 };
