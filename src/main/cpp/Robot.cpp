@@ -47,12 +47,10 @@ Robot::Robot():
   m_swerveController = new SwerveControl(moduleArray, true, false);
 
   // navx
-  try
-  {
+  try{
     m_navx = std::make_shared<AHRS>(frc::SerialPort::kUSB2);
   }
-  catch (const std::exception &e)
-  {
+  catch (const std::exception &e){
     std::cerr << e.what() << std::endl;
   }
 
