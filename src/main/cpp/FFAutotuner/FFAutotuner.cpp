@@ -134,27 +134,22 @@ void FFAutotuner::resetProfile(bool center){
     double maxDist = bounds_.max - bounds_.min;
     //Calculate new profile, making it faster if it is reaching the target
     if(duration != 0.0){
-        double averagePosError = error_.absTotalError.pos/duration;
-        double averageVelError = error_.absTotalError.vel/duration;
-        double precision = precision_;
-        if(precision == 0){
-            precision = 100.0;
-        }
-        if((averagePosError < maxDist/precision_) && //Check if round was accurate enough
-           (averageVelError < maxDist/precision_)){
+        double avgAbsPosError = error_.absTotalError.pos/duration;
+        double avgAbsVelError = error_.absTotalError.vel/duration;
+        if((avgAbsPosError < maxDist/precision_) && //Check if round was accurate enough
+           (avgAbsVelError < maxDist/precision_)){
             testTime_ = (testTime_ - targTime_)*0.8 + targTime_; //0.8 is decay rate
         }
 
+        double avgPosError = error_.totalError.pos/duration * Utils::sign(profile_.getDisplacement()); // Have avg error point in + direction
         double prevPosError = pastPosErrors_.back();
-        if(Utils::sign(prevPosError) != Utils::sign(averagePosError)){ //Is oscillating
+        if(Utils::sign(prevPosError) != Utils::sign(avgPosError)){ //Is oscillating
             s_ *= 0.75; //Scale down step size
         }
-        else if(std::abs(averagePosError - prevPosError) < std::abs(prevPosError * 0.001)){ // Is not approaching fast enough
+        else if(std::abs(avgPosError - prevPosError) < std::abs(prevPosError * 0.001)){ // Is not approaching fast enough; 0.001 threshold
             s_ *= 1.25; //Scale up 
         }
-
-        pastPosErrors_.push_back(averagePosError);
-        pastPosErrors_.push_back(averageVelError);
+        pastPosErrors_.push_back(avgPosError);
     }
     double maxVel = maxDist/testTime_;
     double maxAcc = maxVel;

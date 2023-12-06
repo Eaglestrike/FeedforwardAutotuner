@@ -10,10 +10,16 @@ TrapezoidalProfile::TrapezoidalProfile(double maxVel, double maxAcc):
     setTarget(startPose_, finalPose_);
 }
 
+/**
+ * Calculates the current expected pose on the profile
+ * 
+ * @returns profile pose
+*/
 Poses::Pose1D TrapezoidalProfile::currentPose(){
     double time = timer_.Get().value();
-    if(time > calcTimes_.deaccTime){//After done with profile, just moves at constant velocity
-        return Poses::extrapolate(finalPose_, time - calcTimes_.deaccTime);
+    //If statement done in reverse order to deal with triangular profiles
+    if(time > calcTimes_.deaccTime){
+        return Poses::extrapolate(finalPose_, time - calcTimes_.deaccTime); //After done with profile, just moves at constant velocity
     }
     else if(time > calcTimes_.coastTime){ //Deaccelerating
         return Poses::extrapolate(calcTimes_.coastEnd, time -  calcTimes_.coastTime);
@@ -117,6 +123,10 @@ double TrapezoidalProfile::getDuration(){
 
 double TrapezoidalProfile::getMaxVel(){
     return maxVel_;
+}
+
+double TrapezoidalProfile::getDisplacement(){
+    return finalPose_.pos - startPose_.pos;
 }
 
 double TrapezoidalProfile::getMaxAcc(){

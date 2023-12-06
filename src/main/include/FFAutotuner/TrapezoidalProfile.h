@@ -13,6 +13,7 @@ class TrapezoidalProfile{
 
         double getTime();
         double getDuration();
+        double getDisplacement();
 
         double getMaxVel();
         double getMaxAcc();
