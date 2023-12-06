@@ -35,9 +35,9 @@ Elevator::Elevator(bool enabled, bool shuffleboard):
 };
 
 void Elevator::CorePeriodic(){
-    current_pose_.position = getElevatorHeight();
+    current_pose_.pos = getElevatorHeight();
     // dividing by 10 to convert from 100 milliseconds to seconds.
-    current_pose_.velocity = talonUnitsToMeters(left_.GetSelectedSensorVelocity()) * 10.0;
+    current_pose_.vel = talonUnitsToMeters(left_.GetSelectedSensorVelocity()) * 10.0;
 }
 
 /**
@@ -71,7 +71,7 @@ void Elevator::CoreTeleopPeriodic() {
     }
 
     if(!limit_switch_.Get() && current_state_ != MOVING){
-        if (current_pose_.position < 0.0 || current_pose_.position > 0.1) {
+        if (current_pose_.pos < 0.0 || current_pose_.pos > 0.1) {
             zero_motors();
         }
         if(motor_output < feedforward_.getKg() + 0.001){
@@ -79,16 +79,16 @@ void Elevator::CoreTeleopPeriodic() {
         }
     }
 
-    if(current_pose_.position > ElevatorConstants::MAX_EXTENSION - 0.001){
+    if(current_pose_.pos > ElevatorConstants::MAX_EXTENSION - 0.001){
         if(motor_output > feedforward_.getKg() + 0.001){
             motor_output = feedforward_.getKg();
         }
     }
 
-    if (shuffleboard_) {
-        frc::SmartDashboard::PutNumber("El Motor output", motor_output);
-        frc::SmartDashboard::PutNumber("El Motor output true", std::clamp(motor_output, -max_volts_, max_volts_));
-        frc::SmartDashboard::PutNumber("El max volts", max_volts_);
+    if (shuff_.isEnabled()) {
+        shuff_.PutNumber("El Motor output", motor_output);
+        shuff_.PutNumber("El Motor output true", std::clamp(motor_output, -max_volts_, max_volts_));
+        shuff_.PutNumber("El max volts", max_volts_);
     }
 
     left_.SetVoltage(units::volt_t{std::clamp(motor_output, -max_volts_, max_volts_)});
@@ -167,7 +167,7 @@ void Elevator::HoldPosition(){
 }
 
 double Elevator::GetPos(){
-    return current_pose_.position;
+    return current_pose_.pos;
 }
 
 /**
@@ -276,8 +276,8 @@ void Elevator::CoreShuffleboardPeriodic(){
     // frc::SmartDashboard::PutNumber(name_ + " lm rotation", getLeftRotation());
     // frc::SmartDashboard::PutNumber(name_ + " rm rotation", getRightRotation());
 
-    frc::SmartDashboard::PutNumber("current ev position", current_pose_.position);
-    frc::SmartDashboard::PutNumber("current ev velocity", current_pose_.velocity);
+    frc::SmartDashboard::PutNumber("current ev position", current_pose_.pos);
+    frc::SmartDashboard::PutNumber("current ev velocity", current_pose_.vel);
 
     frc::SmartDashboard::PutString(name_ + " state", getStateString());
     frc::SmartDashboard::PutString(name_ + " target", getTargetString());

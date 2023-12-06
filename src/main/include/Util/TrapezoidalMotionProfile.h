@@ -1,21 +1,21 @@
 #include <cmath>
-#include "Util/Mathutil.h"
+#include "Util/Utils.h"
 
 class TrapezoidalMotionProfile {
     public:
-    TrapezoidalMotionProfile(double MAX_VEL, double MAX_ACC, double curPos, double setPt);
-    TrapezoidalMotionProfile(double MAX_VEL, double MAX_ACC);
-    double GetVelocity() const;
-    double GetPosition() const;
-    double GetAcceleration() const;
-    bool AtSetPoint() const;
-    double GetMaxVel() const;
-    double GetMaxAcc() const;
+        TrapezoidalMotionProfile(double MAX_VEL, double MAX_ACC, double curPos, double setPt);
+        TrapezoidalMotionProfile(double MAX_VEL, double MAX_ACC);
+        double GetVelocity() const;
+        double GetPosition() const;
+        double GetAcceleration() const;
+        bool AtSetPoint() const;
+        double GetMaxVel() const;
+        double GetMaxAcc() const;
 
-    void SetSetpoint(double curPos, double setPoint);
-    void SetMaxVel(double maxVel);
-    void SetMaxAcc(double maxAcc);
-    void Periodic();
+        void SetSetpoint(double curPos, double setPoint);
+        void SetMaxVel(double maxVel);
+        void SetMaxAcc(double maxAcc);
+        void Periodic();
     private:
         // void CalcTurnTime(double curPos, double setPt);
         void CalcVelTurnPos(double curPos, double setPt);

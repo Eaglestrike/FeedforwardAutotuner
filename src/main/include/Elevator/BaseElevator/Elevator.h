@@ -7,6 +7,7 @@
 #include "ElevatorConstants.h"
 #include "FeedforwardPID.h"
 
+#include "Util/Poses.h"
 #include "Util/Mechanism.h"
 
 #include "frc/DigitalInput.h"
@@ -15,7 +16,7 @@ class Elevator : public Mechanism{
     using ElevatorTarget = ElevatorConstants::ElevatorTarget;
     using enum ElevatorConstants::ElevatorTarget;
     public:
-        // constructor
+        // constructors
         Elevator(bool enabled, bool shuffleboard);
 
         // possible states that the elevator can be in

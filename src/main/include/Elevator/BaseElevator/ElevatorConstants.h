@@ -9,14 +9,6 @@
 #include <cstddef>
 #include <map>
 
-namespace Poses {
-    struct Pose1D {
-        double velocity = 0.0;
-        double acceleration = 0.0;
-        double position = 0.0;
-    };
-};
-
 namespace ElevatorConstants {
   enum ElevatorTarget{
       CUSTOM,

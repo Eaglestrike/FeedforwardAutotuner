@@ -1,4 +1,4 @@
-#include "Util/Mathutil.h"
+#include "Util/Utils.h"
 
 #include <algorithm>
 #include <cmath>
@@ -8,6 +8,9 @@
 #endif
 
 #include <frc/Timer.h>
+#include <frc/smartdashboard/SmartDashboard.h>
+
+#include "GeneralConstants.h"
 
 /**
  * Gets the value with the minimum absolute value between two numbers
@@ -85,8 +88,13 @@ bool Utils::NearZero(const vec::Vector2D vec, const double tolerance)
  * @returns normalized angle
 */
 double Utils::NormalizeAng(const double ang) {
-  const vec::Vector2D vec{std::cos(ang), std::sin(ang)};
-  return vec.angle();
+  double ang2 = std::fmod(ang, M_PI * 2);
+  ang2 = std::fmod(ang + M_PI * 2, M_PI * 2);
+  if (ang2 > M_PI) {
+    ang2 -= M_PI * 2;
+  }
+
+  return ang2;
 }
 
 /**
@@ -169,9 +177,136 @@ double Utils::GetAngBetweenVec(const vec::Vector2D v1, const vec::Vector2D v2) {
       dot(v1, v2) / (magn(v1) * magn(v2)), -1.0, 1.0));
 }
 
+/**
+ * Gets red side equivalent of a blue pose
+ * 
+ * @param bluePose a blue pose
+ * 
+ * @returns Red equivalent of the blue pose
+*/
+AutoPaths::SwervePose Utils::GetRedPose(AutoPaths::SwervePose bluePose) {
+  AutoPaths::SwervePose redPose;
+
+  redPose.time = bluePose.time;
+  redPose.y = bluePose.y;
+  redPose.vy = bluePose.vy;
+  redPose.x = FieldConstants::FIELD_WIDTH - bluePose.x;
+  redPose.vx = -bluePose.vx;
+  redPose.ang = M_PI - bluePose.ang;
+  redPose.angVel = -bluePose.angVel;
+
+  return redPose;
+}
+
+/**
+ * Gets vector of red side equivalents of a blue pose
+ * 
+ * @param bluePoses an vector of blue poses
+ * 
+ * @returns Vector of red equivalents of the blue pose
+*/
+std::vector<AutoPaths::SwervePose> Utils::GetRedPoses(std::vector<AutoPaths::SwervePose> bluePoses) {
+  std::vector<AutoPaths::SwervePose> res;
+  for (auto bluePose : bluePoses) {
+    res.push_back(GetRedPose(bluePose));
+  }
+
+  return res;
+}
+
+/**
+ * Gets vector pos of scoring position
+ * 
+ * @param pos Scoring position, number from 1-9 not 0-8
+ * @param height Low mid high, number from 1-3 not 0-2
+ * @param red If on red side
+ * 
+ * @returns vector pos of scoring position
+*/
+FieldConstants::ScorePair Utils::GetScoringPos(int pos, int height, bool red) {
+  if (pos < 1 || pos > 9) {
+    return {{0, 0}, 0};
+  }
+
+  if (height < 1 || height > 3) {
+    return {{0, 0}, 0};
+  }
+
+  pos--;
+  height--;
+
+  int idx = red ? 8 - pos : pos;
+  int mult = idx / 3;
+  idx = idx % 3;
+
+  FieldConstants::ScorePair scoreP = FieldConstants::BLUE_SCORING_POS[idx][height];
+  double newX = red ? FieldConstants::FIELD_WIDTH - x(scoreP.first) : x(scoreP.first);
+  double newY = y(scoreP.first) - mult * FieldConstants::DIST_BETWEEN_TAGS;
+  scoreP.first = {newX, newY};
+  // scoreP.second = red ? LIDAR_MAX_DIST - scoreP.second : scoreP.second;
+
+  return scoreP;
+}
+
+int Utils::getPieceHeight(ElevatorConstants::ElevatorTarget target){
+  using enum ElevatorConstants::ElevatorTarget;
+  switch(target){
+    case CUSTOM:
+      return 0;
+    case LOW:
+      return 1;
+    case MID:
+      return 2;
+    case HIGH:
+      return 3;
+    case STOWED:
+      return 0;
+  }
+}
+
+/**
+ * Determines if currently setting a cone from scoring position
+*/
+bool Utils::IsCone(int pos) {
+  if (pos == 0) return false;
+
+  pos--;
+
+  return pos % 3 != 1;
+}
+
+/**
+ * Gets expected tag ID from button board position
+ * 
+ * @param pos Position
+ * @param red Is red
+ * 
+ * @returns Tag ID
+*/
+int Utils::GetExpectedTagId(int pos, bool red) {
+  if (pos == 0) {
+    return 0;
+  }
+
+  pos--;
+
+  int id = pos / 3 + 1;
+  if (!red) id += 5;
+  return id;
+}
+
+/**
+ * Sign of number
+*/
+
 double Utils::sign(double x){
-    if(x==0){
-        return 0;
-    }
-    return x > 0? 1.0:-1.0;
+  if(x > 0.0){
+    return 1.0;
+  }
+  else if(x < 0.0){
+    return -1.0;
+  }
+  else{
+    return 0.0;
+  }
 }

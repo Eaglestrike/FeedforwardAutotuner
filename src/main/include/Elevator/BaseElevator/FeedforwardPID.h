@@ -13,6 +13,7 @@
 
 #include <frc/Timer.h>
 
+#include "Util/Poses.h"
 #include "ElevatorConstants.h"
 
 class FeedforwardPID

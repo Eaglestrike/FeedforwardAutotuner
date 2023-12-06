@@ -18,8 +18,33 @@
 
 #include "ShuffleboardSender\ShuffleboardSender.h"
 
+#include <AHRS.h>
+#include <frc/TimedRobot.h>
+#include <frc/smartdashboard/Field2d.h>
+#include <frc/smartdashboard/SendableChooser.h>
+#include <frc/DataLogManager.h>
+#include <wpi/DataLog.h>
+
+#include "Controller/Controller.h"
+
+#include "Drive/AutoLineup.h"
+#include "Drive/AutoPath.h"
+#include "Drive/Odometry.h"
+#include "Drive/SwerveControl.h"
+#include "Drive/SwerveModule.h"
+
+#include "Elevator/ElevatorIntake.h"
+#include "Elevator/Intake/Rollers.h"
+#include "Elevator/Lidar/LidarReader.h"
+
+#include "Util/SocketClient.h"
+#include "Util/thirdparty/simplevectors.hpp"
+#include "Util/Utils.h"
+
 class Robot : public frc::TimedRobot {
     public:
+        Robot();
+
         void RobotInit() override;
         void RobotPeriodic() override;
         void AutonomousInit() override;
@@ -34,16 +59,50 @@ class Robot : public frc::TimedRobot {
         void SimulationPeriodic() override;
 
     private:
-        SwerveDrive drive_{"Drivebase", true, true, true};
-        
         bool tuning = false;
         FFAutotuner tunerX_{"Swerve X", FFAutotuner::SIMPLE};
         FFAutotuner tunerY_{"Swerve Y", FFAutotuner::SIMPLE};
         FFAutotuner tunerAng_{"Swerve Ang", FFAutotuner::SIMPLE};
 
-        AHRS* navx_;
-        Controller controls_;
+        // smartdashboard
+        frc::SendableChooser<std::string> m_startPosChooser;
+        frc::Field2d m_field;
 
-        ShuffleboardSender ShuffData_{"Robot"};
+        // timer
+        double m_prevTime;
+
+        // IMU acclerometer and gyroscope
+        // Gives information on orientation and acceleration
+        std::shared_ptr<AHRS> m_navx;
+
+        // swerve
+        SwerveModule m_swerveFr, m_swerveBr, m_swerveFl, m_swerveBl;
+        SwerveControl *m_swerveController;
+
+        // odometry
+        vec::Vector2D m_startPos; // offset; starting position on field relative to apriltag origin, can use for trim
+        double m_startAng; // offset; starting angle (radians) on field relative to +x axis of apriltag coords, can use for trim
+        double m_joystickAng;
+        Odometry m_odometry;
+        bool m_isAutoLineup = false; // UNUSED; disables tag odometry when auto lineup so robot isnt jumpy
+        bool m_isTrimming = false; // if true, use ff only
+        bool m_isSecondTag = false;
+
+        AutoLineup m_autoLineup;
+        AutoPath m_autoPath;
+
+        //Controller
+        Controller m_controller;
+        
+        // elevator and intake
+        ElevatorIntake m_elevatorIntake;
+        LidarReader m_lidar;
+        Rollers m_rollers;
+
+        // jetson
+        SocketClient m_client;
+        bool m_red;
+        int m_posVal; // for auto lineup socring positions
+        int m_heightVal;
 };
 
