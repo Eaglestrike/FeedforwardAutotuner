@@ -42,6 +42,8 @@ class FFAutotuner{
         void Stop();
         void setPose(Poses::Pose1D currPose);
         double getVoltage();
+        bool isRunning();
+        State getState();
 
         void zeroBounds(double val = 0.0);
         void expandBounds(double val);
