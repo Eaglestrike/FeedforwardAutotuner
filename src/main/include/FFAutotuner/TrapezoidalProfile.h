@@ -37,4 +37,6 @@ class TrapezoidalProfile{
             Poses::Pose1D coastEnd;
             double deaccTime;
         }calcTimes_;
+
+        
 };

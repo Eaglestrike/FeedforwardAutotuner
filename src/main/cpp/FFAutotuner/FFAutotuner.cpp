@@ -6,6 +6,16 @@
 
 using namespace Poses;
 
+/**
+ * Constructor
+ * 
+ * @param name name
+ * @param type type of mechanism
+ * @param min min, can be set later
+ * @param max max, can be set later
+ * @param targTim target time to hit for the max distance
+ * @param testTime starting testing time
+*/
 FFAutotuner::FFAutotuner(std::string name, FFType type, double min, double max, double targTime, double testTime):
     name_(name),
     ffType_(type),
@@ -39,6 +49,9 @@ FFAutotuner::FFAutotuner(std::string name, FFType type, double min, double max, 
 
     ShuffData_.add("min", &bounds_.min, {1,1,5,1}, true);
     ShuffData_.add("max", &bounds_.max, {1,1,6,1}, true);
+
+    ShuffData_.PutNumber("avg abs pos error", 0.0, {2,1, 9, 4});
+    ShuffData_.PutNumber("avg pos error", 0.0, {2, 1, 9, 5});
 }
 
 void FFAutotuner::setPose(Pose1D currPose){
@@ -150,6 +163,9 @@ void FFAutotuner::resetProfile(bool center){
             s_ *= 1.25; //Scale up 
         }
         pastPosErrors_.push_back(avgPosError);
+
+        ShuffData_.PutNumber("avg abs pos error", avgAbsPosError);
+        ShuffData_.PutNumber("avg pos error", avgPosError);
     }
     double maxVel = maxDist/testTime_;
     double maxAcc = maxVel;
