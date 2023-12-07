@@ -54,6 +54,19 @@ FFAutotuner::FFAutotuner(std::string name, FFType type, double min, double max, 
     ShuffData_.PutNumber("avg pos error", 0.0, {2, 1, 9, 5});
 }
 
+void FFAutotuner::Start(){
+    state_ = TUNING;
+}
+void FFAutotuner::Stop(){
+    state_ = IDLE;
+}
+bool FFAutotuner::isRunning(){
+    return state_ != IDLE;
+}
+FFAutotuner::State FFAutotuner::getState(){
+    return state_;
+}
+
 void FFAutotuner::setPose(Pose1D currPose){
     if(state_ == IDLE){
         return;
