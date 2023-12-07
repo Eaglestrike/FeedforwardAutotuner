@@ -64,7 +64,7 @@ Robot::Robot():
     // process camera data
     std::vector<double> camData = m_client.GetData();
     bool isCorrecting = false;
-    if (!m_isAutoLineup && !m_isTrimming && m_client.HasConn() && !m_client.IsStale()) {
+    if (!m_isAutoLineup && m_client.HasConn() && !m_client.IsStale()) {
       int camId = static_cast<int>(camData[0]);
       int tagId = static_cast<int>(camData[1]);
       double x = camData[2];
@@ -117,7 +117,6 @@ Robot::Robot():
     m_autoLineup.UpdateOdom(pos, ang, wheelVel);
     m_autoPath.UpdateOdom(pos, ang, wheelVel);
 
-    // UNCOMMENT BELOW
     frc::SmartDashboard::PutString("Robot pos", pos.toString());
     frc::SmartDashboard::PutNumber("Robot ang", ang);
     frc::SmartDashboard::PutNumber("Robot pitch", pitch);
@@ -126,7 +125,6 @@ Robot::Robot():
     frc::SmartDashboard::PutBoolean("Cam stale", m_client.IsStale());
     frc::SmartDashboard::PutBoolean("Cam connection", m_client.HasConn());
     frc::SmartDashboard::PutData("Field", &m_field);
-    // END UNCOMMENT
 
     // END ODOMETRY
   }, 5_ms, 2_ms);
@@ -146,23 +144,10 @@ void Robot::RobotInit()
   m_startPosChooser.AddOption("Red R", "Red R");
   frc::SmartDashboard::PutData("Starting pos", &m_startPosChooser);
 
-  frc::SmartDashboard::PutNumber("pre dock speed", AutoConstants::PRE_DOCK_SPEED);
-  frc::SmartDashboard::PutNumber("max dock speed", AutoConstants::MAX_DOCK_SPEED);
-  frc::SmartDashboard::PutNumber("pre dock ang", AutoConstants::PRE_DOCK_ANG);
-  frc::SmartDashboard::PutNumber("dock ang", AutoConstants::DOCK_ANG);
-  frc::SmartDashboard::PutNumber("dock tol", AutoConstants::DOCKED_TOL);
-  frc::SmartDashboard::PutNumber("kTilt", AutoConstants::KTILT);
-
   m_navx->ZeroYaw();
   m_swerveController->ResetAngleCorrection();
 
   // Starts recording to data log
-  // frc::DataLogManager::Start();
-
-  // Set up custom log entries
-  // wpi::log::DataLog& log = frc::DataLogManager::GetLog();
-  // m_speedLog = wpi::log::DoubleLogEntry(log, "/ff/swerve/vel");
-  // m_voltsLog = wpi::log::DoubleLogEntry(log, "/ff/swerve/volts");
 
   m_elevatorIntake.Init();
   m_lidar.Init();
@@ -182,16 +167,13 @@ void Robot::RobotPeriodic()
   frc::SmartDashboard::PutBoolean("Pos at target", m_autoLineup.GetPosExecuteState() == AutoLineup::AT_TARGET);
   frc::SmartDashboard::PutBoolean("Ang at target", m_autoLineup.GetAngExecuteState() == AutoLineup::AT_TARGET);
 
-  if (m_controller.getPressedOnce(ZERO_DRIVE_PID))
-  {
+  if (m_controller.getPressedOnce(ZERO_DRIVE_PID)){
     double alpha = frc::SmartDashboard::GetNumber("Filter Alpha", OdometryConstants::ALPHA);
-
-    m_odometry.SetAlpha(alpha); 
+    m_odometry.SetAlpha(alpha);
 
     double tkP = frc::SmartDashboard::GetNumber("ltrans kP", LineupConstants::TRANS_KP);
     double tkI = frc::SmartDashboard::GetNumber("ltrans kI", LineupConstants::TRANS_KI);
     double tkD = frc::SmartDashboard::GetNumber("ltrans kD", LineupConstants::TRANS_KD);
-
     double akP = frc::SmartDashboard::GetNumber("lang kP", LineupConstants::ANG_KP);
     double akI = frc::SmartDashboard::GetNumber("lang kI", LineupConstants::ANG_KI);
     double akD = frc::SmartDashboard::GetNumber("lang kD", LineupConstants::ANG_KD);
@@ -201,18 +183,15 @@ void Robot::RobotPeriodic()
 
     double tMaxSp = frc::SmartDashboard::GetNumber("trans maxSp", AutoConstants::TRANS_MAXSP);
     double tMaxAcc = frc::SmartDashboard::GetNumber("trans maxAcc", AutoConstants::TRANS_MAXACC);
-
     double aMaxSp = frc::SmartDashboard::GetNumber("ang maxSp", AutoConstants::ANG_MAXSP);
     double aMaxAcc = frc::SmartDashboard::GetNumber("ang maxAcc", AutoConstants::ANG_MAXACC);
-
     m_autoLineup.SetPosFF({tMaxSp, tMaxAcc});
     m_autoLineup.SetAngFF({aMaxSp, aMaxAcc});
 
     m_elevatorIntake.UpdateShuffleboard();
   }
 
-  if (m_controller.getPressedOnce(ZERO_YAW))
-  {
+  if (m_controller.getPressedOnce(ZERO_YAW)){
     m_navx->ZeroYaw();
     m_swerveController->ResetAngleCorrection(m_startAng);
     m_odometry.Reset();
@@ -290,10 +269,6 @@ void Robot::TeleopInit() {
   m_swerveController->SetFeedForward(0, 1, 0);
   m_swerveController->SetAngCorrection(true);
   m_posVal = 0;
-  // m_swerveController->SetAngleCorrectionPID(SwerveConstants::ANG_CORRECT_P, SwerveConstants::ANG_CORRECT_I, SwerveConstants::ANG_CORRECT_D);
-  // m_autoLineup.SetPosFF({.maxSpeed = AutoConstants::TRANS_MAXSP, .maxAccel = AutoConstants::TRANS_MAXACC});
-  // m_autoLineup.SetAngFF({.maxSpeed = AutoConstants::ANG_MAXSP, .maxAccel = AutoConstants::ANG_MAXACC});
-  // m_lidar.TeleopInit();
   m_elevatorIntake.Stow();
 }
 
@@ -311,18 +286,12 @@ void Robot::TeleopPeriodic() {
   double mult = fast ? SwerveConstants::NORMAL_SWERVE_MULT : SwerveConstants::SLOW_SWERVE_MULT;
   double vx = std::clamp(lx, -1.0, 1.0) * mult;
   double vy = std::clamp(ly, -1.0, 1.0) * mult;
+  vec::Vector2D setVel = {-vy, -vx};
   double w = -std::clamp(rx, -1.0, 1.0) * mult / 2;
 
   vec::Vector2D curPos = m_odometry.GetPosition();
   double curYaw = m_odometry.GetAng();
 
-  // frc::SmartDashboard::PutNumber("curYaw", curYaw);
-
-  vec::Vector2D setVel = {-vy, -vx};
-
-  if (!Utils::NearZero(setVel)) {
-    m_isTrimming = false;
-  }
 
   // get auto lineup pos
   int posVal = m_controller.getValue(ControllerMapData::SCORING_POS, 0);
@@ -340,7 +309,6 @@ void Robot::TeleopPeriodic() {
   vec::Vector2D tgtPos = m_autoLineup.GetTargetPos();
   frc::SmartDashboard::PutString("cur tgt pos", tgtPos.toString());
   frc::SmartDashboard::PutNumber("cur tgt Ang", m_autoLineup.GetTargetAng());
-  frc::SmartDashboard::PutBoolean("trimming", m_isTrimming);
 
   if (m_posVal && m_heightVal) {
     FieldConstants::ScorePair scorePair = Utils::GetScoringPos(m_posVal, m_heightVal, m_red);
@@ -357,9 +325,6 @@ void Robot::TeleopPeriodic() {
       lidarReading = m_lidar.getCubePos() / 100.0;
       scorePos += {0, m_red ? lidarOffset - lidarReading : lidarReading - lidarOffset};
     }
-
-    // frc::SmartDashboard::PutNumber("Lidar reading", lidarReading);
-    
     m_autoLineup.SetPosTarget(scorePos, false);
     m_autoLineup.SetAngTarget(ang, false);
   }
@@ -368,32 +333,20 @@ void Robot::TeleopPeriodic() {
   double trimX = -m_controller.getValueOnce(ControllerMapData::GET_TRIM_X, 0.0);
   double trimY = -m_controller.getValueOnce(ControllerMapData::GET_TRIM_Y, 0.0);
   vec::Vector2D offset = {trimX, trimY};
-  if (m_red) {
-    offset = rotate(offset, M_PI / 2);
-  } else {
-    offset = rotate(offset, -M_PI / 2);
-  }
-  if (!Utils::NearZero(offset) && m_posVal && m_heightVal && Utils::NearZero(curPos - tgtPos, AutoConstants::TRIM_DIST)) {
-    m_isTrimming = true;
-  }
+  offset = rotate(offset, m_red?(M_PI/2.0) : (-M_PI/2.0));
+
   m_odometry.AddTrimOffset(offset);
 
   AutoLineup::ExecuteState curPosAutoState = m_autoLineup.GetPosExecuteState();
   AutoLineup::ExecuteState curAngAutoState = m_autoLineup.GetAngExecuteState();
-
   //                                          don't auto lineup to (0,0)
   if (m_controller.getPressed(AUTO_LINEUP) && m_posVal && m_heightVal) {
     m_swerveController->SetAngCorrection(false);
     // m_isAutoLineup = true;
-    if (m_isTrimming) {
-      // just do feedforward for trim, just needs to move a little
-      m_autoLineup.SetPosPID(0, 0, 0);
-    } else {
-      double tkP = frc::SmartDashboard::GetNumber("ltrans kP", LineupConstants::TRANS_KP);
-      double tkI = frc::SmartDashboard::GetNumber("ltrans kI", LineupConstants::TRANS_KI);
-      double tkD = frc::SmartDashboard::GetNumber("ltrans kD", LineupConstants::TRANS_KD);
-      m_autoLineup.SetPosPID(tkP, tkI, tkD);
-    }
+    double tkP = frc::SmartDashboard::GetNumber("ltrans kP", LineupConstants::TRANS_KP);
+    double tkI = frc::SmartDashboard::GetNumber("ltrans kI", LineupConstants::TRANS_KI);
+    double tkD = frc::SmartDashboard::GetNumber("ltrans kD", LineupConstants::TRANS_KD);
+    m_autoLineup.SetPosPID(tkP, tkI, tkD);
 
     if (curPosAutoState != AutoLineup::EXECUTING_TARGET) {
       m_autoLineup.StartPosMove();
@@ -404,10 +357,6 @@ void Robot::TeleopPeriodic() {
 
     vec::Vector2D driveVel = m_autoLineup.GetVel();
     double angVel = m_autoLineup.GetAngVel();
-    // double angVel = 0;
-
-    // frc::SmartDashboard::PutString("Auto drive vel", driveVel.toString());
-    // frc::SmartDashboard::PutNumber("Auto ang vel", angVel);
 
     m_swerveController->SetFeedForward(SwerveConstants::kS, SwerveConstants::kV, SwerveConstants::kA);
     m_swerveController->SetRobotVelocity(driveVel, angVel, curYaw, deltaT);
@@ -431,20 +380,11 @@ void Robot::TeleopPeriodic() {
   m_autoPath.StartMove();
   m_autoPath.Periodic();
 
-  double time2 = Utils::GetCurTimeS();
-
-  // frc::SmartDashboard::PutString("pos:", m_pos.toString());
-  // frc::SmartDashboard::PutString("vel:", vel.toString());
-  // frc::SmartDashboard::PutString("setVel:", setVel.toString());
-  // frc::SmartDashboard::PutNumber("setAngVel:", w);
-
   if (m_controller.getTriggerDown(MANUAL1) && m_controller.getTriggerDown(MANUAL2)) {
     double elH = -m_controller.getWithDeadContinuous(ELEVATOR_H, 0.1);
     double intakeAng = -m_controller.getWithDeadContinuous(INTAKE_ANG, 0.1);
     m_elevatorIntake.ManualPeriodic(elH, intakeAng);
-    // frc::SmartDashboard::PutBoolean("Manual", true);
   } else {
-    // frc::SmartDashboard::PutBoolean("Manual", false);
     m_elevatorIntake.TeleopPeriodic();
     bool cone = Utils::IsCone(m_posVal);
     m_elevatorIntake.SetCone(cone);
@@ -483,17 +423,6 @@ void Robot::TeleopPeriodic() {
   m_rollers.HoldIntake(m_controller.getPressed(INTAKE));
 
   m_rollers.Periodic();
-  double time3 = Utils::GetCurTimeS();
-
-  // frc::SmartDashboard::PutNumber("swerve time", time2 - time1);
-  // frc::SmartDashboard::PutNumber("el time", time3 - time2);
-
-  // if (time2 - time1 > 0.01) {
-  //   std::cout << "Swerve Time Overrun" << std::endl;
-  // } else {
-  //   std::cout << "El Time Overrun" << std::endl;
-  // }
-
   m_prevTime = curTime;
 }
 

@@ -59,11 +59,6 @@ class Robot : public frc::TimedRobot {
         void SimulationPeriodic() override;
 
     private:
-        bool tuning = false;
-        FFAutotuner tunerX_{"Swerve X", FFAutotuner::SIMPLE};
-        FFAutotuner tunerY_{"Swerve Y", FFAutotuner::SIMPLE};
-        FFAutotuner tunerAng_{"Swerve Ang", FFAutotuner::SIMPLE};
-
         // smartdashboard
         frc::SendableChooser<std::string> m_startPosChooser;
         frc::Field2d m_field;
@@ -79,13 +74,16 @@ class Robot : public frc::TimedRobot {
         SwerveModule m_swerveFr, m_swerveBr, m_swerveFl, m_swerveBl;
         SwerveControl *m_swerveController;
 
+        FFAutotuner tunerX_{"Swerve X", FFAutotuner::SIMPLE};
+        FFAutotuner tunerY_{"Swerve Y", FFAutotuner::SIMPLE};
+        FFAutotuner tunerAng_{"Swerve Ang", FFAutotuner::SIMPLE};
+
         // odometry
         vec::Vector2D m_startPos; // offset; starting position on field relative to apriltag origin, can use for trim
         double m_startAng; // offset; starting angle (radians) on field relative to +x axis of apriltag coords, can use for trim
         double m_joystickAng;
         Odometry m_odometry;
         bool m_isAutoLineup = false; // UNUSED; disables tag odometry when auto lineup so robot isnt jumpy
-        bool m_isTrimming = false; // if true, use ff only
         bool m_isSecondTag = false;
 
         AutoLineup m_autoLineup;
@@ -98,6 +96,9 @@ class Robot : public frc::TimedRobot {
         ElevatorIntake m_elevatorIntake;
         LidarReader m_lidar;
         Rollers m_rollers;
+        
+        FFAutotuner elevatorTuner_{"Elevator Tuner", FFAutotuner::ELEVATOR};
+        FFAutotuner intaketTuner_{"Intake Tuner", FFAutotuner::ARM};
 
         // jetson
         SocketClient m_client;
