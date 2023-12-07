@@ -13,6 +13,7 @@ class TrapezoidalProfile{
 
         double getTime();
         double getDuration();
+        double getDisplacement();
 
         double getMaxVel();
         double getMaxAcc();
@@ -36,4 +37,6 @@ class TrapezoidalProfile{
             Poses::Pose1D coastEnd;
             double deaccTime;
         }calcTimes_;
+
+        
 };
