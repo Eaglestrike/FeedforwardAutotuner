@@ -19,7 +19,7 @@ Intake::Intake() {
     frc::SmartDashboard::PutNumber("cone spike current", IntakeConstants::CONE_INFO.SPIKE_CURRENT);
 
     intakeTuner_.setMin(-0.3);
-    intakeTuner_.setMax(0.8);
+    intakeTuner_.setMax(1.8);
     intakeTuner_.Start();
 }
 
@@ -48,7 +48,6 @@ void Intake::TeleopPeriodic(){
     
     frc::SmartDashboard::PutNumber("wrist setpt", m_setPt);
     double wristVolts = 0;
-    double spikeCur;
     switch (m_state){
         case MOVING:
             UpdateTargetPose(); // bc still using motion profile 
@@ -67,12 +66,13 @@ void Intake::TeleopPeriodic(){
             IntakeConstants::GamePieceInfo curInfo = IntakeConstants::CUBE_INFO;
             if (m_cone) //{
                 curInfo = IntakeConstants::CONE_INFO;
-            spikeCur = curInfo.SPIKE_CURRENT;
             break;
         }
         case TUNING:
             intakeTuner_.setPose({.pos = m_curPos, .vel = m_curVel, .acc = m_curAcc});
             wristVolts = intakeTuner_.getVoltage();
+            break;
+        case STOPPED:
             break;
     }
     if (dbg){
@@ -282,10 +282,10 @@ void Intake::debugTargPose(){
     frc::SmartDashboard::PutNumber("targ vel", m_targetVel);
     frc::SmartDashboard::PutNumber("targ pos", m_targetPos);
     frc::SmartDashboard::PutNumber("targ acc", m_targetAcc);
-    bool deploy, cone, outtake;
+    bool deploy/*, cone, outtake*/;
     deploy = frc::SmartDashboard::GetBoolean("Deploy", false);
-    cone = frc::SmartDashboard::GetBoolean("Cone", false);
-    outtake = frc::SmartDashboard::GetBoolean("Outtake", false);
+    // cone = frc::SmartDashboard::GetBoolean("Cone", false);
+    // outtake = frc::SmartDashboard::GetBoolean("Outtake", false);
     if (deploy){
         Deploy();
         frc::SmartDashboard::PutBoolean("Deploy", false);

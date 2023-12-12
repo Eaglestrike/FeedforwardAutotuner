@@ -81,23 +81,27 @@ void FFAutotuner::setPose(Pose1D currPose){
         std::cout<<name_ <<" Recentering"<<std::endl;
     }
 
-    if(currPose_.pos < bounds_.min && state_ != RECENTER_FROM_MIN){ // Out of bounds
+    else if(currPose_.pos < bounds_.min && state_ != RECENTER_FROM_MIN){ // Out of bounds
         state_ = RECENTER_FROM_MIN;
         resetProfile(true);
         std::cout<<name_ <<" Recentering"<<std::endl;
     }
 
-    if(profile_.isFinished() || dt > 0.1){
+    
+    else if(profile_.isFinished() || dt > 0.1){
         state_ = TUNING;
         resetProfile(false);
+        std::cout<<"stuck"<<std::endl;
     }
 
     Pose1D expectedPose = profile_.currentPose();
     Pose1D error = (expectedPose - currPose_)*dt; //Error*dt
 
+    std::cout<<"here1"<<std::endl;
     double maxVel = profile_.getMaxVel();
     double maxAcc = profile_.getMaxAcc();
     
+    std::cout<<"here2"<<std::endl;
     double velComp = expectedPose.vel / maxVel;
     double stcComp = Utils::sign(expectedPose.vel) - velComp; //static component will be inverted trapezoid
     double accComp = expectedPose.acc / maxAcc;
@@ -109,6 +113,7 @@ void FFAutotuner::setPose(Pose1D currPose){
         default:       grvComp = 0.0;
     }
     
+    std::cout<<"here3"<<std::endl;
     double absStcComp = std::abs(stcComp);
     double absVelComp = std::abs(velComp);
     double absAccComp = std::abs(accComp);
@@ -123,6 +128,7 @@ void FFAutotuner::setPose(Pose1D currPose){
         error_.absTotalError += abs(error);
     }
 
+    std::cout<<"here4"<<std::endl;
     lastTime_ = frc::Timer::GetFPGATimestamp().value();
 }
 
