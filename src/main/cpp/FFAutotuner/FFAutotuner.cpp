@@ -57,6 +57,7 @@ FFAutotuner::FFAutotuner(std::string name, FFType type, double min, double max, 
 
 void FFAutotuner::Start(){
     state_ = TUNING;
+    lastTime_ = frc::Timer::GetFPGATimestamp.value();
 }
 void FFAutotuner::Stop(){
     state_ = IDLE;
