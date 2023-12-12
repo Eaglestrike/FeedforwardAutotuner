@@ -14,6 +14,7 @@ namespace ShuffleboardHelper{
         //         return component->get()->GetEntry()
         //     }
         // }
+        std::cout<<"Created: "<<data.tab->GetTitle()<<"/"<<data.name<<std::endl;
         if((data.pose.positionX >= 0) && (data.pose.positionY >= 0)){
             return data.tab->Add(data.name, value)
                                 .WithWidget(type)

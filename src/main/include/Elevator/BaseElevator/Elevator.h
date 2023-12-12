@@ -10,6 +10,8 @@
 #include "Util/Poses.h"
 #include "Util/Mechanism.h"
 
+#include "FFAutotuner/FFAutotuner.h"
+
 #include "frc/DigitalInput.h"
 
 class Elevator : public Mechanism{
@@ -23,7 +25,8 @@ class Elevator : public Mechanism{
         enum ElevatorState {
             MANUAL,
             MOVING,
-            HOLDING_POS
+            HOLDING_POS,
+            TUNING
         };
 
         void Stow();
@@ -36,6 +39,9 @@ class Elevator : public Mechanism{
         double GetPos();
         double GetVel();
 
+        void StartTuning();
+        void UseTuningValues(bool tuningVals);
+        
         // debug getters
         double getElevatorHeight();
         ElevatorState getState();
@@ -72,4 +78,6 @@ class Elevator : public Mechanism{
 
         double talonUnitsToMeters(double motor_units);
         double talonUnitsToAngle(double motor_units);
+
+        FFAutotuner elevatorTuner_{"Elevator Tuner", FFAutotuner::ELEVATOR};
 };

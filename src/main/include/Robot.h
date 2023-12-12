@@ -74,9 +74,9 @@ class Robot : public frc::TimedRobot {
         SwerveModule m_swerveFr, m_swerveBr, m_swerveFl, m_swerveBl;
         SwerveControl *m_swerveController;
 
-        FFAutotuner tunerX_{"Swerve X", FFAutotuner::SIMPLE};
-        FFAutotuner tunerY_{"Swerve Y", FFAutotuner::SIMPLE};
-        FFAutotuner tunerAng_{"Swerve Ang", FFAutotuner::SIMPLE};
+        // FFAutotuner tunerX_{"Swerve X", FFAutotuner::SIMPLE};
+        // FFAutotuner tunerY_{"Swerve Y", FFAutotuner::SIMPLE};
+        // FFAutotuner tunerAng_{"Swerve Ang", FFAutotuner::SIMPLE};
 
         // odometry
         vec::Vector2D m_startPos; // offset; starting position on field relative to apriltag origin, can use for trim
@@ -95,10 +95,6 @@ class Robot : public frc::TimedRobot {
         // elevator and intake
         ElevatorIntake m_elevatorIntake;
         LidarReader m_lidar;
-        Rollers m_rollers;
-        
-        FFAutotuner elevatorTuner_{"Elevator Tuner", FFAutotuner::ELEVATOR};
-        FFAutotuner intaketTuner_{"Intake Tuner", FFAutotuner::ARM};
 
         // jetson
         SocketClient m_client;

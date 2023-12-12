@@ -4,6 +4,8 @@
 #include "BaseElevator/Elevator.h"
 #include "Lidar/LidarReader.h"
 
+#include "ShuffleboardSender/ShuffleboardSender.h"
+
 class ElevatorIntake{
     public:
         enum MechanismState{
@@ -77,4 +79,6 @@ class ElevatorIntake{
 
         // for debug
         IntakeElevatorConstants::GamePieceInfo& curGPInfo = coneinfo;
+
+        ShuffleboardSender shuff_{"Elevator Intake"};
 };

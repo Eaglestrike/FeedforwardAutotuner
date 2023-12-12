@@ -17,6 +17,10 @@ Intake::Intake() {
         frc::SmartDashboard::PutNumber("a", m_a); 
     }
     frc::SmartDashboard::PutNumber("cone spike current", IntakeConstants::CONE_INFO.SPIKE_CURRENT);
+
+    intakeTuner_.setMin(-0.3);
+    intakeTuner_.setMax(0.8);
+    intakeTuner_.Start();
 }
 
 void Intake::Zero() {
@@ -31,6 +35,7 @@ void Intake::ManualPeriodic(double wristVolts){
 
 void Intake::Periodic(){
     UpdatePose();
+    intakeTuner_.ShuffleboardUpdate();
 }
 
 // teleop periodic runs on state machine
@@ -42,7 +47,7 @@ void Intake::TeleopPeriodic(){
     }
     
     frc::SmartDashboard::PutNumber("wrist setpt", m_setPt);
-    double wristVolts = 0, rollerVolts = 0;
+    double wristVolts = 0;
     double spikeCur;
     switch (m_state){
         case MOVING:
@@ -54,74 +59,30 @@ void Intake::TeleopPeriodic(){
                 m_targetPos = m_setPt;
                 m_targetVel = 0.0;
                 m_targetAcc = 0.0;
-            } else if (m_hasGamePiece){
-                if (m_cone){
-                    // if(m_hpSt){
-                    //     rollerVolts = -IntakeConstants::ROLLER_MAX_VOLTS;
-                    // } else 
-                    rollerVolts = IntakeConstants::CONE_INFO.KEEP_VOLTS;
-                } else
-                    rollerVolts = IntakeConstants::CUBE_INFO.KEEP_VOLTS;
-            }else if (m_targState == DEPLOYED) 
-                rollerVolts = m_rollerVolts;
+            }
             break;
         case AT_TARGET:
+        {
             wristVolts = FFPIDCalculate();
-
             IntakeConstants::GamePieceInfo curInfo = IntakeConstants::CUBE_INFO;
             if (m_cone) //{
                 curInfo = IntakeConstants::CONE_INFO;
-            //     spikeCur = frc::SmartDashboard::GetNumber("cone spike current", curInfo.SPIKE_CURRENT);
-            // } else 
             spikeCur = curInfo.SPIKE_CURRENT;
-            rollerVolts = m_rollerVolts;
-            
-            if (m_hasGamePiece){
-                if (m_cone){
-                    if (m_targState == HP){
-                        rollerVolts = -IntakeConstants::ROLLER_MAX_VOLTS;
-                    } else{
-                        rollerVolts = IntakeConstants::CONE_INFO.KEEP_VOLTS;
-                    }
-                } else {
-                    if (Utils::GetCurTimeS() - m_hasConeStartTime > 1) {
-                        rollerVolts = IntakeConstants::CUBE_INFO.KEEP_VOLTS;
-                    }
-                }
-            } else {
-                m_hasConeStartTime = Utils::GetCurTimeS();
-            }
-            
-            if (m_outtaking) {
-                rollerVolts = m_rollerVolts;
-            }
-
-            // if (m_targState == DEPLOYED){
-            //     if(!m_outtaking && m_rollerMotor.GetOutputCurrent() > spikeCur
-            //      && Utils::GetCurTimeS() > m_rollerStartTime + 0.5) {
-            //         m_hasGamePiece = true;
-            //         if (m_targState == HP) 
-            //             m_rollerStartTime = Utils::GetCurTimeS();
-            //     }
-            //     else if (m_outtaking) 
-            //         m_hasGamePiece = false;
-            // }
+            break;
+        }
+        case TUNING:
+            intakeTuner_.setPose({.pos = m_curPos, .vel = m_curVel, .acc = m_curAcc});
+            wristVolts = intakeTuner_.getVoltage();
             break;
     }
     if (dbg){
         frc::SmartDashboard::PutNumber("wrist volts", wristVolts);
-        frc::SmartDashboard::PutNumber("roller volts", rollerVolts);
     }
     if (dbg2){
         frc::SmartDashboard::PutBoolean("outtaking", m_outtaking);
         frc::SmartDashboard::PutBoolean("has gp", m_hasGamePiece);
-        // frc::SmartDashboard::PutBoolean("hpst", m_hpSt);
-        frc::SmartDashboard::PutNumber("roller volts", rollerVolts);
-        frc::SmartDashboard::PutNumber("m roller volts", m_rollerVolts);
-        // frc::SmartDashboard::PutNumber("roller current", m_rollerMotor.GetOutputCurrent());
     }
     m_wristMotor.SetVoltage(units::volt_t(std::clamp(-wristVolts, -IntakeConstants::WRIST_MAX_VOLTS, IntakeConstants::WRIST_MAX_VOLTS)));
-    // m_rollerMotor.SetVoltage(units::volt_t(std::clamp(rollerVolts, -IntakeConstants::ROLLER_MAX_VOLTS,IntakeConstants::ROLLER_MAX_VOLTS)));
 }
 
 void Intake::UpdateLidarData(LidarReader::LidarData lidarData){
@@ -146,72 +107,47 @@ void Intake::HalfStow(){
     m_state = MOVING;
 }
 
-// void Intake::SetHPIntake(bool hp){
-//     m_hpSt = hp;
-// }
-
 // deploys the intake to intake a cone or cube
-void Intake::DeployIntake(bool cone){
-    DeployNoRollers();
-    StartRollers(false, cone);
-}
-
-// deploys the intake to intake a cone or cube
-void Intake::DeployNoRollers(bool hp){
-    if ((m_targState == DEPLOYED && !hp) ||(m_targState == HP && hp)) return;
-    if (hp) m_targState = HP;
+void Intake::Deploy(){
+    if ((m_targState == DEPLOYED)) return;
     else m_targState = DEPLOYED;
-
     if (m_customDeployPos == -1)
         m_setPt = IntakeConstants::DEPLOYED_POS;
     else 
         m_setPt = m_customDeployPos;
 
     SetSetpoint(m_setPt);
-    m_rollerVolts = 0;
     m_state = MOVING;
 }
 
-void Intake::StartRollers(bool outtaking, bool cone){
-    m_cone = cone;
-    m_outtaking = outtaking;
+void Intake::StartTuning(){
+    m_state = TUNING;
+    std::cout<<"Intake Set State Tuning"<<std::endl;
+};
 
-    if(m_customRollerVolts == -1)
-        m_rollerVolts = IntakeConstants::ROLLER_MAX_VOLTS;
-    else 
-        m_rollerVolts = m_customRollerVolts;
-
-    if (outtaking) {
-        if(cone) m_rollerVolts = IntakeConstants::CONE_INFO.OUT_VOLTS;
-        else m_rollerVolts = IntakeConstants::CUBE_INFO.OUT_VOLTS;
-        m_rollerVolts *= -1;
+void Intake::UseTuningValues(bool tuningVals){
+    if(tuningVals){
+        FFAutotuner::FFConfig ff = intakeTuner_.getFeedforward();
+        m_s = ff.ks;
+        m_g = ff.kg;
+        m_v = ff.kv;
+        m_a = ff.ka;
     }
-    if (cone)
-        m_rollerVolts *= -1;
-
-    m_rollerStartTime = Utils::GetCurTimeS();
-}
-
-void Intake::StopRollers(){
-    m_rollerVolts = 0;
-}
-
-// deploys the intake to outtake a cone or cube
-void Intake::DeployOuttake(bool cone){
-    DeployNoRollers();
-    StartRollers(true, cone);
-}
+    else{
+        m_kp = IntakeConstants::EXTEND_DEPLOY_P;
+        m_ki = IntakeConstants::EXTEND_DEPLOY_I;
+        m_kd = IntakeConstants::EXTEND_DEPLOY_D;
+        m_s = IntakeConstants::EXTEND_DEPLOY_S;
+        m_g = IntakeConstants::EXTEND_DEPLOY_G;
+        m_v = IntakeConstants::EXTEND_DEPLOY_V;
+        m_a = IntakeConstants::EXTEND_DEPLOY_A;
+    }
+};
 
 //changes the position the intake will deploy to when a deploy method iscalled
 //so not an action method
 void Intake::ChangeDeployPos(double newPos){
     m_customDeployPos = std::clamp(newPos, IntakeConstants::MIN_POS, IntakeConstants::MAX_POS);
-}
-
-// changes the voltage at which the rollers will spin when the do spin
-// again not an action method
-void Intake::ChangeRollerVoltage(double newVoltage){
-    m_customRollerVolts = fabs(newVoltage);
 }
 
 //disables intake
@@ -232,7 +168,6 @@ double Intake::GetPos(){
 }
 
 double Intake::GetRelPos() {
-    // return 2 * m_absEncoderInit - m_relEncoder.GetPosition() * IntakeConstants::REL_CONV_FACTOR;
     return -m_relEncoder.GetPosition() * IntakeConstants::REL_CONV_FACTOR + m_absEncoderInit;
 }
 
@@ -352,10 +287,7 @@ void Intake::debugTargPose(){
     cone = frc::SmartDashboard::GetBoolean("Cone", false);
     outtake = frc::SmartDashboard::GetBoolean("Outtake", false);
     if (deploy){
-        if (outtake)
-            DeployOuttake(cone);
-        else 
-            DeployIntake(cone);
+        Deploy();
         frc::SmartDashboard::PutBoolean("Deploy", false);
     }
 }

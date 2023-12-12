@@ -8,6 +8,8 @@
 #include <frc/DutyCycleEncoder.h>
 #include <frc/controller/PIDController.h>
 
+#include "FFAutotuner/FFAutotuner.h"
+
 #include "Elevator/ElevatorIntakeConstants.h"
 #include "Elevator/Lidar/LidarReader.h"
 
@@ -21,7 +23,8 @@ class Intake{
             MOVING,
             AT_TARGET,
             STOPPED,
-            MANUAL
+            MANUAL,
+            TUNING
         };
 
         enum TargetState{
@@ -37,16 +40,15 @@ class Intake{
         void Periodic();    
         void Stow();
         void HalfStow();
-        void DeployNoRollers(bool hp = false);
-        void StopRollers();
-        void StartRollers(bool outtaking, bool cone);
         void SetHPIntake(bool hp);
-        void DeployIntake(bool cone); 
-        void DeployOuttake(bool cone);
+        void Deploy();
         void ChangeDeployPos(double newPos); //pos should be in radians, w 0 as extended and parallel to ground
-        void ChangeRollerVoltage(double newVoltage); 
         void UpdateLidarData(LidarReader::LidarData lidarData);
         void Kill();
+
+        void StartTuning();
+        void UseTuningValues(bool tuningVals); 
+
         // for debugging
         MechState GetState();
         TargetState GetTargetState();
@@ -102,4 +104,7 @@ class Intake{
 
         double m_absEncoderInit = 0;
         double m_relEncoderInit = 0;
+
+        bool usingTuningConstants_ = false;
+        FFAutotuner intakeTuner_{"Intake Tuner", FFAutotuner::ARM};
 };

@@ -63,9 +63,8 @@ Robot::Robot():
 
     // process camera data
     std::vector<double> camData = m_client.GetData();
-    bool isCorrecting = false;
     if (!m_isAutoLineup && m_client.HasConn() && !m_client.IsStale()) {
-      int camId = static_cast<int>(camData[0]);
+      //int camId = static_cast<int>(camData[0]);
       int tagId = static_cast<int>(camData[1]);
       double x = camData[2];
       double y = camData[3];
@@ -86,9 +85,6 @@ Robot::Robot():
       // frc::SmartDashboard::PutBoolean("Good ID", res);
       if (!res) {
         tagId = 0;
-      } else {
-        isCorrecting = true;
-        // std::cout << "good " << tagId << " " << Utils::GetCurTimeMs() << std::endl;
       }
       m_isSecondTag = true;
     } else {
@@ -247,7 +243,6 @@ void Robot::RobotPeriodic()
   m_lidar.Periodic();
 
   m_elevatorIntake.UpdateLidarData(m_lidar.getData());
-  m_rollers.UpdateLidarData(m_lidar.getData());
 }
 
 /**
@@ -273,8 +268,8 @@ void Robot::TeleopInit() {
 }
 
 void Robot::TeleopPeriodic() {
+  double t1 = frc::Timer::GetFPGATimestamp().value();
   double curTime = Utils::GetCurTimeS();
-  double time1 = curTime;
   double deltaT = curTime - m_prevTime;
 
   double lx = m_controller.getWithDeadContinuous(SWERVE_STRAFEX, 0.1);
@@ -292,7 +287,6 @@ void Robot::TeleopPeriodic() {
   vec::Vector2D curPos = m_odometry.GetPosition();
   double curYaw = m_odometry.GetAng();
 
-
   // get auto lineup pos
   int posVal = m_controller.getValue(ControllerMapData::SCORING_POS, 0);
   if (posVal) {
@@ -302,6 +296,7 @@ void Robot::TeleopPeriodic() {
   if (heightVal) {
     m_heightVal = heightVal;
   }
+  double t2 = frc::Timer::GetFPGATimestamp().value();
 
   // frc::SmartDashboard::PutNumber("score pos val", m_posVal);
   // frc::SmartDashboard::PutNumber("Height val", m_heightVal);
@@ -328,6 +323,7 @@ void Robot::TeleopPeriodic() {
     m_autoLineup.SetPosTarget(scorePos, false);
     m_autoLineup.SetAngTarget(ang, false);
   }
+  double t3 = frc::Timer::GetFPGATimestamp().value();
 
   // trim, offset shold be opposite direction of offset so it moves correct direction
   double trimX = -m_controller.getValueOnce(ControllerMapData::GET_TRIM_X, 0.0);
@@ -373,6 +369,7 @@ void Robot::TeleopPeriodic() {
       m_swerveController->SetRobotVelocityTele(setVel, w, curYaw, deltaT, m_joystickAng);
     }
   }
+  double t4 = frc::Timer::GetFPGATimestamp().value();
 
   m_autoLineup.Periodic();
   m_swerveController->Periodic();
@@ -388,7 +385,6 @@ void Robot::TeleopPeriodic() {
     m_elevatorIntake.TeleopPeriodic();
     bool cone = Utils::IsCone(m_posVal);
     m_elevatorIntake.SetCone(cone);
-    m_rollers.SetCone(cone);
     if(m_controller.getPressedOnce(SCORE_HIGH))
       m_elevatorIntake.ScoreHigh();
     else if (m_controller.getPressedOnce(SCORE_MID))
@@ -399,30 +395,22 @@ void Robot::TeleopPeriodic() {
       m_elevatorIntake.Stow();
     else if (m_controller.getPressedOnce(HP)) {
       m_elevatorIntake.IntakeFromHPS();
-      m_rollers.SetCone(true);
-      m_rollers.Intake(true);
       m_posVal = 1;
     }
     else if (m_controller.getPressedOnce(GROUND_INTAKE)) {
       m_elevatorIntake.IntakeFromGround();
-      m_rollers.SetCone(false);
-      m_rollers.Intake(true);
       m_posVal = 2;
     }
     else if (m_controller.getPOVDownOnce(INTAKE_FLANGE)){
       m_elevatorIntake.IntakeFlange();
-      m_rollers.SetCone(true);
-      m_rollers.Intake(true);
       m_posVal = 1;
     }
   }
-  if (m_controller.getPressedOnce(INTAKE))
-    m_rollers.Intake();
-  else if (m_controller.getPressedOnce(OUTTAKE))
-    m_rollers.Outtake();
-  m_rollers.HoldIntake(m_controller.getPressed(INTAKE));
-
-  m_rollers.Periodic();
+  double t5 = frc::Timer::GetFPGATimestamp().value();
+  if(t2 - t1 > 0.02){std::cout<<"t1-t2 "<<t2-t1<<std::endl;}
+  if(t3 - t2 > 0.02){std::cout<<"t2-t3 "<<t3-t2<<std::endl;}
+  if(t4 - t3 > 0.02){std::cout<<"t3-t4 "<<t4-t3<<std::endl;}
+  if(t5 - t4 > 0.02){std::cout<<"t4-t5 "<<t5-t4<<std::endl;}
   m_prevTime = curTime;
 }
 

@@ -23,6 +23,29 @@ ElevatorIntake::ElevatorIntake(){
         frc::SmartDashboard::PutNumber("grnd e", curGPInfo.GROUND_INTAKE.ELEVATOR_LENG);
         frc::SmartDashboard::PutNumber("grnd w", curGPInfo.GROUND_INTAKE.INTAKE_ANGLE);
     }
+
+    shuff_.addToggleButton("Use Elevator Tuning Vals",
+        [&](){m_elevator.UseTuningValues(true);
+            std::cout<<"elevator feedforward"<<std::endl;},
+        [&](){m_elevator.UseTuningValues(false);
+            std::cout<<"elevator default"<<std::endl;},
+        false,
+        {2,2,0,0});
+
+    shuff_.addToggleButton("Use Intake Tuning Vals",
+        [&](){m_intake.UseTuningValues(true);
+            std::cout<<"intake feedforward"<<std::endl;},
+        [&](){m_intake.UseTuningValues(false);
+            std::cout<<"intake default"<<std::endl;},
+        false,
+        {2,2,2,0});
+
+    shuff_.addButton("Elevator Tuning",
+        [&](){m_elevator.StartTuning();
+            std::cout<<"elevator tuning"<<std::endl;}, {2,2,0,2});
+    shuff_.addButton("Intake Tuning",
+        [&](){m_intake.StartTuning();
+            std::cout<<"intake tuning"<<std::endl;}, {2,2,2,2});
 }
 
 void ElevatorIntake::Init() {
@@ -43,7 +66,6 @@ void ElevatorIntake::DeployElevatorIntake(double elevatorLength, double intakeAn
     m_movingState = HALFSTOWING;
     m_targElevatorPos = elevatorLength;
     m_targIntakeAng = intakeAng;
-    // m_intake.SetHPIntake(false);
 }
 
 void ElevatorIntake::Stow(){
@@ -62,7 +84,6 @@ void ElevatorIntake::Debug(){
         DeployElevatorIntake(m_targElevatorPos, m_targIntakeAng);
         frc::SmartDashboard::PutBoolean("deploy", false);
     }
-
     if(frc::SmartDashboard::GetBoolean("stow", false)){
         Stow();
         frc::SmartDashboard::PutBoolean("stow", false);
@@ -84,8 +105,6 @@ void ElevatorIntake::Debug(){
 }
 
 void ElevatorIntake::DebugScoring(){
-    // frc::SmartDashboard::PutBoolean("outtake", m_outtaking);
-    // frc::SmartDashboard::PutBoolean("cone", m_cone);
     frc::SmartDashboard::PutNumber("elevator acc pos", m_elevator.getElevatorHeight());
     frc::SmartDashboard::PutNumber("intake acc angle", m_intake.GetPos());
     frc::SmartDashboard::PutNumber("elevator targ pos", m_targElevatorPos);
@@ -112,22 +131,9 @@ void ElevatorIntake::Periodic(){
     frc::SmartDashboard::PutNumber("intake acc angle", m_intake.GetPos());
     frc::SmartDashboard::PutNumber("abs intake acc angle", m_intake.GetAbsEncoderPos());
     frc::SmartDashboard::PutNumber("elevator targ pos", m_targElevatorPos);
-    frc::SmartDashboard::PutNumber("intake targ angle", m_targIntakeAng);    
-}
+    frc::SmartDashboard::PutNumber("intake targ angle", m_targIntakeAng);
 
-void ElevatorIntake::ToggleRoller(bool outtaking){
-    if (m_rollers){
-        if (m_outtaking != outtaking){
-            m_intake.StartRollers(outtaking, m_cone);
-        } else {
-            m_intake.StopRollers();
-            m_rollers = false;
-        }
-    } else {
-        m_intake.StartRollers(outtaking, m_cone); 
-        m_rollers = true;
-    }
-    m_outtaking = outtaking;
+    shuff_.update(true);
 }
 
 void ElevatorIntake::UpdateLidarData(LidarReader::LidarData lidarData){
@@ -135,25 +141,23 @@ void ElevatorIntake::UpdateLidarData(LidarReader::LidarData lidarData){
 }
 
 void ElevatorIntake::TeleopPeriodic(){
-   if (dbg) {
-    Debug();
-
-   }
+    if (dbg) {
+        Debug();
+    }
     if (dbg2){
-    DebugScoring();
-    //  std::cout << "elevator targ pos " << m_targElevatorPos << std::endl;
-    // std::cout << "intake targ pos " << m_targIntakeAng << std::endl;
-   }
-    // frc::SmartDashboard::PutNumber("elevator acc pos", m_elevator.getElevatorHeight());
-    // frc::SmartDashboard::PutNumber("intake acc angle", m_intake.GetPos());
-    // frc::SmartDashboard::PutNumber("elevator targ pos", m_targElevatorPos);
-    // frc::SmartDashboard::PutNumber("intake targ angle", m_targIntakeAng);    
+        DebugScoring();
+    }
+    double t1 = frc::Timer::GetFPGATimestamp().value();
     m_intake.TeleopPeriodic();
+    double t2 = frc::Timer::GetFPGATimestamp().value();
+    if(t2 - t1 > 0.02){std::cout<<"intake "<<t2-t1<<std::endl;}
     m_elevator.TeleopPeriodic();
+    double t3 = frc::Timer::GetFPGATimestamp().value();
+    if(t3 - t2 > 0.02){std::cout<<"elevator "<<t3-t2<<std::endl;}
     switch(m_state){
         case STOPPED:
-            m_elevator.Disable();
-            m_intake.Kill();
+            // m_elevator.Disable();
+            // m_intake.Kill();
             break;
         case MOVING:
             switch(m_movingState){
@@ -164,7 +168,6 @@ void ElevatorIntake::TeleopPeriodic(){
                         if(m_targState == STOWED)
                             m_elevator.Stow();
                         else{
-                            // std::cout << "extending elevator " << std::endl;
                             m_elevator.ExtendToCustomPos(m_targElevatorPos);
                         }
                            
@@ -177,10 +180,7 @@ void ElevatorIntake::TeleopPeriodic(){
                             m_intake.Stow();
                         } else {
                             m_intake.ChangeDeployPos(m_targIntakeAng);
-                            m_intake.DeployNoRollers(m_targState == HP);
-                            // uncomment below if want to start rollers without explicitly tleling it to
-                            // if (m_rollers)
-                            //     m_intake.StartRollers(m_outtaking, m_cone);
+                            m_intake.Deploy();
                         }
                         m_movingState = INTAKE;
                     }
@@ -192,6 +192,8 @@ void ElevatorIntake::TeleopPeriodic(){
                 case DONE:
                     break;
             }
+            break;
+        default:
             break;
     }
 }

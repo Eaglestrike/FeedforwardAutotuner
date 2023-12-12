@@ -32,12 +32,37 @@ Elevator::Elevator(bool enabled, bool shuffleboard):
     right_.SetNeutralMode(NeutralMode::Brake);
 
     feedforward_.reset();
+
+    elevatorTuner_.setMin(0.05);
+    elevatorTuner_.setMax(ElevatorConstants::MAX_EXTENSION - 0.05);
 };
+
+void Elevator::StartTuning(){
+    current_state_ = TUNING;
+}
+
+void Elevator::UseTuningValues(bool tuningVals){
+    if(tuningVals){
+        FFAutotuner::FFConfig ff = elevatorTuner_.getFeedforward();
+        feedforward_.setKs(ff.ks);
+        feedforward_.setKg(ff.kg);
+        feedforward_.setKv(ff.kv);
+        feedforward_.setKa(ff.ka);
+    }
+    else{
+        feedforward_.setKa(ElevatorConstants::FEEDFORWARD_CONSTANTS.ka);
+        feedforward_.setKv(ElevatorConstants::FEEDFORWARD_CONSTANTS.kv);
+        feedforward_.setKs(ElevatorConstants::FEEDFORWARD_CONSTANTS.ks);
+        feedforward_.setKg(ElevatorConstants::FEEDFORWARD_CONSTANTS.kg);
+    }
+}
 
 void Elevator::CorePeriodic(){
     current_pose_.pos = getElevatorHeight();
     // dividing by 10 to convert from 100 milliseconds to seconds.
     current_pose_.vel = talonUnitsToMeters(left_.GetSelectedSensorVelocity()) * 10.0;
+
+    elevatorTuner_.ShuffleboardUpdate();
 }
 
 /**
@@ -65,6 +90,11 @@ void Elevator::CoreTeleopPeriodic() {
             if (feedforward_.isFinished() && current_target_ == STOWED){
                 current_state_ = HOLDING_POS;
             }
+            break;
+        case TUNING:
+            elevatorTuner_.setPose(current_pose_);
+            motor_output = elevatorTuner_.getVoltage();
+            left_.SetVoltage(units::volt_t{std::clamp(motor_output, -max_volts_, max_volts_)});
             break;
         default:
             motor_output = 0.0;

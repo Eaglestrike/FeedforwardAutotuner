@@ -80,7 +80,7 @@ bool ShuffleboardSender::isEnabled(){
 }
 
 void ShuffleboardSender::PutNumber(std::string name, double val){
-    if(keyMap_.contains(name)){
+    if(keyMap_.find(name) != keyMap_.end()){
         keyMap_[name]->SetDouble(val);
         return;
     }
@@ -88,7 +88,7 @@ void ShuffleboardSender::PutNumber(std::string name, double val){
 }
 
 void ShuffleboardSender::PutNumber(std::string name, double val, ShuffleboardItemInterface::ShuffleboardPose pose){
-    if(keyMap_.contains(name)){
+    if(keyMap_.find(name) != keyMap_.end()){
         keyMap_[name]->SetDouble(val);
         return;
     }
@@ -96,7 +96,7 @@ void ShuffleboardSender::PutNumber(std::string name, double val, ShuffleboardIte
 }
 
 void ShuffleboardSender::PutBoolean(std::string name, bool val){
-    if(keyMap_.contains(name)){
+    if(keyMap_.find(name) != keyMap_.end()){
         keyMap_[name]->SetBoolean(val);
         return;
     }
@@ -104,7 +104,7 @@ void ShuffleboardSender::PutBoolean(std::string name, bool val){
 }
 
 void ShuffleboardSender::PutBoolean(std::string name, bool val, ShuffleboardItemInterface::ShuffleboardPose pose){
-    if(keyMap_.contains(name)){
+    if(keyMap_.find(name) != keyMap_.end()){
         keyMap_[name]->SetBoolean(val);
         return;
     }
@@ -112,7 +112,7 @@ void ShuffleboardSender::PutBoolean(std::string name, bool val, ShuffleboardItem
 }
 
 void ShuffleboardSender::PutInteger(std::string name, int val){
-    if(keyMap_.contains(name)){
+    if(keyMap_.find(name) != keyMap_.end()){
         keyMap_[name]->SetInteger(val);
         return;
     }
@@ -120,7 +120,7 @@ void ShuffleboardSender::PutInteger(std::string name, int val){
 }
 
 void ShuffleboardSender::PutInteger(std::string name, int val, ShuffleboardItemInterface::ShuffleboardPose pose){
-    if(keyMap_.contains(name)){
+    if(keyMap_.find(name) != keyMap_.end()){
         keyMap_[name]->SetInteger(val);
         return;
     }
@@ -128,7 +128,7 @@ void ShuffleboardSender::PutInteger(std::string name, int val, ShuffleboardItemI
 }
 
 void ShuffleboardSender::PutString(std::string name, std::string val){
-    if(keyMap_.contains(name)){
+    if(keyMap_.find(name) != keyMap_.end()){
         keyMap_[name]->SetString(val);
         return;
     }
@@ -136,7 +136,7 @@ void ShuffleboardSender::PutString(std::string name, std::string val){
 }
 
 void ShuffleboardSender::PutString(std::string name, std::string val, ShuffleboardItemInterface::ShuffleboardPose pose){
-    if(keyMap_.contains(name)){
+    if(keyMap_.find(name) != keyMap_.end()){
         keyMap_[name]->SetString(val);
         return;
     }
@@ -144,25 +144,25 @@ void ShuffleboardSender::PutString(std::string name, std::string val, Shuffleboa
 }
 
 double ShuffleboardSender::GetNumber(std::string name, double defaultVal){
-    if(keyMap_.contains(name)){
+    if(keyMap_.find(name) != keyMap_.end()){
         return keyMap_[name]->GetDouble(defaultVal);
     }
     return defaultVal;
 }
 bool ShuffleboardSender::GetBoolean(std::string name, bool defaultVal){
-    if(keyMap_.contains(name)){
+    if(keyMap_.find(name) != keyMap_.end()){
         return keyMap_[name]->GetBoolean(defaultVal);
     }
     return defaultVal;
 }
 int ShuffleboardSender::GetInteger(std::string name, int defaultVal){
-    if(keyMap_.contains(name)){
+    if(keyMap_.find(name) != keyMap_.end()){
         return keyMap_[name]->GetInteger(defaultVal);
     }
     return defaultVal;
 }
 std::string ShuffleboardSender::GetString(std::string name, std::string defaultVal){
-    if(keyMap_.contains(name)){
+    if(keyMap_.find(name) != keyMap_.end()){
         return keyMap_[name]->GetString(defaultVal);
     }
     return defaultVal;
