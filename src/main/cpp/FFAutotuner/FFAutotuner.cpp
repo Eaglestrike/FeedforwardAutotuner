@@ -47,11 +47,12 @@ FFAutotuner::FFAutotuner(std::string name, FFType type, double min, double max, 
     ShuffData_.add("total abs pos error", &error_.absTotalError.pos, {2,1,9,2});
     ShuffData_.add("total abs vel error", &error_.absTotalError.vel, {2,1,9,3});
 
+    ShuffData_.add("precision", &precision_, {2,1,5,0}, true);
     ShuffData_.add("min", &bounds_.min, {1,1,5,1}, true);
     ShuffData_.add("max", &bounds_.max, {1,1,6,1}, true);
 
-    ShuffData_.PutNumber("avg abs pos error", 0.0, {2,1, 9, 4});
-    ShuffData_.PutNumber("avg pos error", 0.0, {2, 1, 9, 5});
+    ShuffData_.PutNumber("avg abs pos error", 0.0, {1,1, 8, 2});
+    ShuffData_.PutNumber("avg pos error", 0.0, {1, 1, 8, 3});
 }
 
 void FFAutotuner::Start(){
@@ -145,6 +146,7 @@ double FFAutotuner::getVoltage(){
 void FFAutotuner::resetProfile(bool center){
     //Update feedforwards gains by average error for each term
     double duration = profile_.getDuration();
+    double maxDist = bounds_.max - bounds_.min;
     if(duration != 0.0){
         double dKs = error_.gainError.ks/duration * s_;
         double dKv = error_.gainError.kv/duration * s_;
@@ -155,11 +157,8 @@ void FFAutotuner::resetProfile(bool center){
         ffTesting_.kv += dKv;
         ffTesting_.ka += dKa;
         ffTesting_.kg += dKg;
-    }
 
-    double maxDist = bounds_.max - bounds_.min;
-    //Calculate new profile, making it faster if it is reaching the target
-    if(duration != 0.0){
+        //Calculate new profile, making it faster if it is reaching the target
         double avgAbsPosError = error_.absTotalError.pos/duration;
         double avgAbsVelError = error_.absTotalError.vel/duration;
         if((avgAbsPosError < maxDist/precision_) && //Check if round was accurate enough
@@ -230,6 +229,9 @@ void FFAutotuner::setFeedforward(FFConfig config){
 
 void FFAutotuner::ShuffleboardUpdate(){
     ShuffData_.update(true);
+    if(precision_ == 0.0){
+        precision_ = 10.0;
+    }
 }
 
 void FFAutotuner::resetError(){
