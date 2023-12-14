@@ -1,6 +1,6 @@
-#include "FFAutotuner\TrapezoidalProfile.h"
+#include "FFAutotuner/TrapezoidalProfile.h"
 
-#include "Util\MathUtil.h"
+#include "Util/Utils.h"
 
 TrapezoidalProfile::TrapezoidalProfile(double maxVel, double maxAcc):
     maxVel_(std::abs(maxVel)),
