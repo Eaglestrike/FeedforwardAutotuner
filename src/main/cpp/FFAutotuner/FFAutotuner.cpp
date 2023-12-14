@@ -73,35 +73,35 @@ void FFAutotuner::setPose(Pose1D currPose){
         return;
     }
     currPose_ = currPose;
-    double dt = frc::Timer::GetFPGATimestamp().value() - lastTime_;
 
+    double currT = frc::Timer::GetFPGATimestamp().value();
+    double dt = currT - lastTime_;
+    lastTime_ = currT;
+    
     if(currPose_.pos > bounds_.max && state_ != RECENTER_FROM_MAX){ // Out of bounds
         state_ = RECENTER_FROM_MAX;
         resetProfile(true);
         std::cout<<name_ <<" Recentering"<<std::endl;
+        return;
     }
-
-    else if(currPose_.pos < bounds_.min && state_ != RECENTER_FROM_MIN){ // Out of bounds
+    if(currPose_.pos < bounds_.min && state_ != RECENTER_FROM_MIN){ // Out of bounds
         state_ = RECENTER_FROM_MIN;
         resetProfile(true);
         std::cout<<name_ <<" Recentering"<<std::endl;
+        return;
     }
-
-    
-    else if(profile_.isFinished() || dt > 0.1){
+    if(profile_.isFinished() || dt > 0.1){
         state_ = TUNING;
         resetProfile(false);
-        std::cout<<"stuck"<<std::endl;
+        return;
     }
 
     Pose1D expectedPose = profile_.currentPose();
     Pose1D error = (expectedPose - currPose_)*dt; //Error*dt
 
-    std::cout<<"here1"<<std::endl;
     double maxVel = profile_.getMaxVel();
     double maxAcc = profile_.getMaxAcc();
-    
-    std::cout<<"here2"<<std::endl;
+
     double velComp = expectedPose.vel / maxVel;
     double stcComp = Utils::sign(expectedPose.vel) - velComp; //static component will be inverted trapezoid
     double accComp = expectedPose.acc / maxAcc;
@@ -112,8 +112,7 @@ void FFAutotuner::setPose(Pose1D currPose){
         case ELEVATOR: grvComp = 1.0;                        break;
         default:       grvComp = 0.0;
     }
-    
-    std::cout<<"here3"<<std::endl;
+
     double absStcComp = std::abs(stcComp);
     double absVelComp = std::abs(velComp);
     double absAccComp = std::abs(accComp);
@@ -127,9 +126,6 @@ void FFAutotuner::setPose(Pose1D currPose){
         error_.totalError += error;
         error_.absTotalError += abs(error);
     }
-
-    std::cout<<"here4"<<std::endl;
-    lastTime_ = frc::Timer::GetFPGATimestamp().value();
 }
 
 double FFAutotuner::getVoltage(){
@@ -171,14 +167,16 @@ void FFAutotuner::resetProfile(bool center){
            (avgAbsVelError < maxDist/precision_)){
             testTime_ = (testTime_ - targTime_)*0.8 + targTime_; //0.8 is decay rate
         }
-
+        
         double avgPosError = error_.totalError.pos/duration * Utils::sign(profile_.getDisplacement()); // Have avg error point in + direction
-        double prevPosError = pastPosErrors_.back();
-        if(Utils::sign(prevPosError) != Utils::sign(avgPosError)){ //Is oscillating
-            s_ *= 0.75; //Scale down step size
-        }
-        else if(std::abs(avgPosError - prevPosError) < std::abs(prevPosError * 0.001)){ // Is not approaching fast enough; 0.001 threshold
-            s_ *= 1.25; //Scale up 
+        if(pastPosErrors_.size() > 0){
+            double prevPosError = pastPosErrors_[pastPosErrors_.size() - 1];
+            if(Utils::sign(prevPosError) != Utils::sign(avgPosError)){ //Is oscillating
+                s_ *= 0.75; //Scale down step size
+            }
+            else if(std::abs(avgPosError - prevPosError) < std::abs(prevPosError * 0.001)){ // Is not approaching fast enough; 0.001 threshold
+                s_ *= 1.25; //Scale up 
+            }
         }
         pastPosErrors_.push_back(avgPosError);
 
@@ -198,7 +196,6 @@ void FFAutotuner::resetProfile(bool center){
         nextTarget = bounds_.min + (maxDist * (random() % 100000L) / 100000.0); //Random next target
     }
     profile_.setTarget(currPose_, {.pos = nextTarget, .vel = 0.0, .acc = 0.0});
-    std::cout<<"Set " << name_ << " target: " << nextTarget <<std::endl;
 
     resetError();
 }
@@ -237,6 +234,12 @@ void FFAutotuner::ShuffleboardUpdate(){
     ShuffData_.update(true);
     if(precision_ == 0.0){
         precision_ = 10.0;
+    }
+    if(targTime_ == 0.0){
+        targTime_ = 1.0;
+    }
+    if(testTime_ < targTime_){
+        testTime_ = targTime_;
     }
 }
 

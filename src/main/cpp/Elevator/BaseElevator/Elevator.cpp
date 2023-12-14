@@ -35,6 +35,7 @@ Elevator::Elevator(bool enabled, bool shuffleboard):
 
     elevatorTuner_.setMin(0.05);
     elevatorTuner_.setMax(ElevatorConstants::MAX_EXTENSION - 0.05);
+    elevatorTuner_.Start();
 };
 
 void Elevator::StartTuning(){
@@ -94,7 +95,6 @@ void Elevator::CoreTeleopPeriodic() {
         case TUNING:
             elevatorTuner_.setPose(current_pose_);
             motor_output = elevatorTuner_.getVoltage();
-            left_.SetVoltage(units::volt_t{std::clamp(motor_output, -max_volts_, max_volts_)});
             break;
         default:
             motor_output = 0.0;
