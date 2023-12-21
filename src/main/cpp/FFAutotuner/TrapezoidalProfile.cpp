@@ -1,6 +1,6 @@
 #include "FFAutotuner/TrapezoidalProfile.h"
 
-#include "Util/Utils.h"
+#include "FFAutotuner/FFHelpers.hpp"
 
 TrapezoidalProfile::TrapezoidalProfile(double maxVel, double maxAcc):
     maxVel_(std::abs(maxVel)),
@@ -55,16 +55,16 @@ bool TrapezoidalProfile::setTarget(Poses::Pose1D currPose, Poses::Pose1D finalPo
     double dx = finalPose_.pos - startPose_.pos;
     double dv = finalPose_.vel - startPose_.vel;
 
-    double sVel = Utils::sign(dv);
+    double sVel = FFHelpers::sign(dv);
     double aVel = sVel * maxAcc_;
-    double tVel = 0.0;
+    double tVel = 0.0;  
     if(dv != 0){
         tVel = dv/aVel;
     }
     double xVel = (finalPose_.vel + startPose_.vel)/2.0 * tVel; //x = (vf+vi)/2 * t
 
     double xTpzd = dx - xVel;
-    double sTpzd = Utils::sign(xTpzd);
+    double sTpzd = FFHelpers::sign(xTpzd);
     double vTpzdM = sTpzd * maxVel_;
     double aTpzdM = sTpzd * maxAcc_;
     double vTpzdI;

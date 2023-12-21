@@ -1,7 +1,7 @@
 #include "FFAutotuner/FFAutotuner.h"
 
+#include "FFAutotuner/FFHelpers.hpp"
 #include <random>
-#include "Util/Utils.h"
 
 using namespace Poses;
 
@@ -18,7 +18,7 @@ using namespace Poses;
 FFAutotuner::FFAutotuner(std::string name, FFType type, double min, double max, double targTime, double testTime):
     name_(name),
     ffType_(type),
-    state_(IDLE),
+    state_(TUNING),
     currPose_({.pos = 0.0, .vel = 0.0, .acc = 0.0}),
     lastTime_(frc::Timer::GetFPGATimestamp().value()),
     profile_(0.0, 0.0),
@@ -54,24 +54,11 @@ FFAutotuner::FFAutotuner(std::string name, FFType type, double min, double max, 
     ShuffData_.PutNumber("avg pos error", 0.0, {1, 1, 8, 3});
 }
 
-void FFAutotuner::Start(){
-    state_ = TUNING;
-    lastTime_ = frc::Timer::GetFPGATimestamp().value();
-}
-void FFAutotuner::Stop(){
-    state_ = IDLE;
-}
-bool FFAutotuner::isRunning(){
-    return state_ != IDLE;
-}
 FFAutotuner::State FFAutotuner::getState(){
     return state_;
 }
 
 void FFAutotuner::setPose(Pose1D currPose){
-    if(state_ == IDLE){
-        return;
-    }
     currPose_ = currPose;
 
     double currT = frc::Timer::GetFPGATimestamp().value();
@@ -103,7 +90,7 @@ void FFAutotuner::setPose(Pose1D currPose){
     double maxAcc = profile_.getMaxAcc();
 
     double velComp = expectedPose.vel / maxVel;
-    double stcComp = Utils::sign(expectedPose.vel) - velComp; //static component will be inverted trapezoid
+    double stcComp = FFHelpers::sign(expectedPose.vel) - velComp; //static component will be inverted trapezoid
     double accComp = expectedPose.acc / maxAcc;
     double grvComp;
     switch(ffType_){
@@ -129,17 +116,14 @@ void FFAutotuner::setPose(Pose1D currPose){
 }
 
 double FFAutotuner::getVoltage(){
-    if(state_ == IDLE){
-        return 0.0;
-    }
     Pose1D expectedPose = profile_.currentPose();
     switch(ffType_){
         case SIMPLE:
-            return Utils::sign(expectedPose.vel)*ffTesting_.ks + expectedPose.vel*ffTesting_.kv + expectedPose.acc*ffTesting_.ka;
+            return FFHelpers::sign(expectedPose.vel)*ffTesting_.ks + expectedPose.vel*ffTesting_.kv + expectedPose.acc*ffTesting_.ka;
         case ARM:
-            return Utils::sign(expectedPose.vel)*ffTesting_.ks + expectedPose.vel*ffTesting_.kv + expectedPose.acc*ffTesting_.ka + std::cos(expectedPose.pos)*ffTesting_.kg;
+            return FFHelpers::sign(expectedPose.vel)*ffTesting_.ks + expectedPose.vel*ffTesting_.kv + expectedPose.acc*ffTesting_.ka + std::cos(expectedPose.pos)*ffTesting_.kg;
         case ELEVATOR:
-            return Utils::sign(expectedPose.vel)*ffTesting_.ks + expectedPose.vel*ffTesting_.kv + expectedPose.acc*ffTesting_.ka + ffTesting_.kg;
+            return FFHelpers::sign(expectedPose.vel)*ffTesting_.ks + expectedPose.vel*ffTesting_.kv + expectedPose.acc*ffTesting_.ka + ffTesting_.kg;
         default:
             return 0.0;
     }
@@ -168,10 +152,10 @@ void FFAutotuner::resetProfile(bool center){
             testTime_ = (testTime_ - targTime_)*0.8 + targTime_; //0.8 is decay rate
         }
         
-        double avgPosError = error_.totalError.pos/duration * Utils::sign(profile_.getDisplacement()); // Have avg error point in + direction
+        double avgPosError = error_.totalError.pos/duration * FFHelpers::sign(profile_.getDisplacement()); // Have avg error point in + direction
         if(pastPosErrors_.size() > 0){
             double prevPosError = pastPosErrors_[pastPosErrors_.size() - 1];
-            if(Utils::sign(prevPosError) != Utils::sign(avgPosError)){ //Is oscillating
+            if(FFHelpers::sign(prevPosError) != FFHelpers::sign(avgPosError)){ //Is oscillating
                 s_ *= 0.75; //Scale down step size
             }
             else if(std::abs(avgPosError - prevPosError) < std::abs(prevPosError * 0.001)){ // Is not approaching fast enough; 0.001 threshold
